@@ -1,3 +1,5 @@
 /dist-newstyle
 result
 data.db
+frontend/elm-stuff/
+frontend/node_modules/

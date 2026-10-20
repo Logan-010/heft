@@ -1,0 +1,17 @@
+{
+  "name": "heft-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "mkdir -p dist && elm make src/Main.elm --optimize --output=dist/elm.js && npm run build:css && cp index.html icon.png dist/",
+    "build:css": "tailwindcss -i src/styles.css -o dist/style.css --minify",
+    "check": "elm make src/Main.elm --output=/dev/null",
+    "format": "elm-format src/ --yes",
+    "test": "elm-test"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

@@ -60,6 +60,15 @@
               # Language server
               haskell-language-server
 
+              # Elm compiler and tooling
+              elmPackages.elm
+              elmPackages.elm-format
+              elmPackages.elm-test
+              elmPackages.elm-language-server
+
+              # JavaScript / frontend tooling
+              nodejs
+
               # Formatting
               ormolu
               haskellPackages.cabal-fmt

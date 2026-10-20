@@ -14,7 +14,11 @@ maintainer:    loganbreezestl@gmail.com
 category:      Finance
 build-type:    Simple
 
--- extra-source-files:
+extra-source-files:
+  frontend/dist/index.html
+  frontend/dist/elm.js
+  frontend/dist/style.css
+  frontend/dist/icon.png
 
 common warnings
   ghc-options: -Wall -threaded
@@ -40,9 +44,9 @@ executable heft
     , text
     , time
     , wai
-    , wai-extra
     , warp
     , warp-tls
+    , file-embed
 
   hs-source-dirs:   app
   default-language: Haskell2010

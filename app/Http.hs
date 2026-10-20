@@ -9,7 +9,6 @@ import qualified Http.Router
 import Logger (Level (Info), logMsg, withLogger)
 import Network.Wai.Handler.Warp (defaultSettings, runSettings, setHost, setPort)
 import Network.Wai.Handler.WarpTLS (runTLS, tlsSettings)
-import Network.Wai.Middleware.RequestLogger (logStdout)
 import System.IO (hPutStrLn, stderr)
 
 splitHostPort :: String -> Maybe (String, Int)
@@ -46,7 +45,6 @@ serve addr db =
         logMsg logger Info "Database initialized"
 
         runSettings s $
-          logStdout $
             Http.Router.root conn logger
     Nothing ->
       hPutStrLn stderr "heft: invalid address"
@@ -66,7 +64,6 @@ serveTLS addr db cert key =
         logMsg logger Info "Database initialized"
 
         runTLS (tlsSettings cert key) s $
-          logStdout $
             Http.Router.root conn logger
     Nothing ->
       hPutStrLn stderr "heft: invalid address"

@@ -11,4 +11,4 @@ executable-dynamic: False
 jobs: $ncpus
 package *
   ghc-options: -O2
-
+  split-sections: True
