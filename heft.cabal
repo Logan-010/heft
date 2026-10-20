@@ -17,21 +17,30 @@ build-type:    Simple
 -- extra-source-files:
 
 common warnings
-  ghc-options: -Wall
+  ghc-options: -Wall -threaded
 
 executable heft
   import:           warnings
   main-is:          Main.hs
   other-modules:
     Cli
+    Database
+    Database.Migrate
+    Http
     Http.Router
-    Http.Serve
+    Logger
 
   -- other-extensions:
   build-depends:
     , base           ^>=4.20.2.0
+    , bytestring
+    , fast-logger
+    , http-types
     , sqlite-simple
+    , text
+    , time
     , wai
+    , wai-extra
     , warp
     , warp-tls
 

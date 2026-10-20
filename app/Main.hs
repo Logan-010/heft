@@ -1,7 +1,7 @@
 module Main (main) where
 
 import qualified Cli
-import Http.Serve (serve, serveTLS)
+import Http (serve, serveTLS)
 import System.Environment (getArgs)
 import System.IO (hPutStrLn, stderr)
 
