@@ -62,6 +62,8 @@ root db secret logger req respond =
       Http.Finance.Transactions.new db logger req respond
     ("DELETE", ["api", "transactions", "delete"]) ->
       Http.Finance.Transactions.remove db logger req respond
+    ("UPDATE", ["api", "transactions", "edit"]) ->
+      Http.Finance.Transactions.edit db logger req respond
     -- Frontend routes
     ("GET", ["style.css"]) ->
       respond $

@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Http.Finance.Transactions (list, new, remove) where
+module Http.Finance.Transactions (list, new, remove, edit) where
 
 import Control.Exception (IOException, try)
 import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
@@ -20,6 +20,9 @@ import Logger (Logger)
 import qualified Logger
 import Network.HTTP.Types (status200, status400, status500)
 import Network.Wai (Application, responseLBS, strictRequestBody)
+
+getTimestamp :: IO Int
+getTimestamp = floor <$> getPOSIXTime
 
 data ListRequest = ListRequest
   { accountName :: Text
@@ -74,8 +77,8 @@ list db logger req respond =
                 $ map (\(na, a, ti) -> ListResponse (T.pack na) a ti) t
 
 data NewRequest = NewRequest
-  { name :: Text,
-    accountName :: Text,
+  { accountName :: Text,
+    name :: Text,
     ammount :: Int
   }
   deriving (Show, Generic)
@@ -86,7 +89,7 @@ new :: Connection -> Logger -> Application
 new db logger req respond =
   strictRequestBody req >>= \b -> case eitherDecode b of
     Left _ -> respond $ responseLBS status400 [("Content-Type", "text/plain")] $ LBS.pack "Bad request"
-    Right (NewRequest n a m) ->
+    Right (NewRequest a n m) ->
       Http.Auth.authenticate db req >>= \case
         Left (status, err) ->
           respond
@@ -118,12 +121,10 @@ new db logger req respond =
                     [("Content-Type", "aplication/json")]
                   $ LBS.pack
                   $ show tid
-  where
-    getTimestamp = floor <$> getPOSIXTime
 
 data RemoveRequest = RemoveRequest
-  { id :: Int,
-    accountName :: Text
+  { accountName :: Text,
+    id :: Int
   }
   deriving (Show, Generic)
 
@@ -133,7 +134,7 @@ remove :: Connection -> Logger -> Application
 remove db logger req respond =
   strictRequestBody req >>= \b -> case eitherDecode b of
     Left _ -> respond $ responseLBS status400 [("Content-Type", "text/plain")] $ LBS.pack "Bad request"
-    Right (RemoveRequest i a) ->
+    Right (RemoveRequest a i) ->
       Http.Auth.authenticate db req >>= \case
         Left (status, err) ->
           respond
@@ -163,3 +164,49 @@ remove db logger req respond =
                   status200
                   [("Content-Type", "text/plain")]
                 $ LBS.pack "OK!"
+
+data EditRequest = EditRequest
+  { accountName :: Text,
+    id :: Int,
+    name :: Text,
+    ammount :: Int
+  }
+  deriving (Show, Generic)
+
+instance FromJSON EditRequest
+
+edit :: Connection -> Logger -> Application
+edit db logger req respond =
+  strictRequestBody req >>= \b -> case eitherDecode b of
+    Left _ -> respond $ responseLBS status400 [("Content-Type", "text/plain")] $ LBS.pack "Bad request"
+    Right (EditRequest a i n am) ->
+      getTimestamp >>= \ti ->
+        Http.Auth.authenticate db req >>= \case
+          Left (status, err) ->
+            respond
+              $ responseLBS
+                status
+                [("Content-Type", "text/plain")]
+              $ LBS.pack err
+          Right u ->
+            try (Database.Finance.Transactions.edit db u (T.unpack a) i (T.unpack n) am ti) >>= \case
+              Left (err :: IOException) ->
+                Logger.logMsg
+                  logger
+                  Logger.Warn
+                  ( T.pack $
+                      show err
+                  )
+                  >> respond (responseLBS status500 [("Content-Type", "text/plain")] "Internal Server Error")
+              Right (Just err) ->
+                respond
+                  $ responseLBS
+                    status400
+                    [("Content-Type", "text/plain")]
+                  $ LBS.pack err
+              Right Nothing ->
+                respond
+                  $ responseLBS
+                    status200
+                    [("Content-Type", "text/plain")]
+                  $ LBS.pack "OK!"
