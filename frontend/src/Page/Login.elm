@@ -138,7 +138,7 @@ view model =
                 ]
                 []
             , if model.register then
-                input [ type_ "text", class Style.input, attribute "aria-label" "Secret", placeholder "Enter secret...", onInput UpdateSecret, value model.secret ] []
+                input [ type_ "password", class Style.input, attribute "aria-label" "Secret", placeholder "What's the magic word?", onInput UpdateSecret, value model.secret ] []
 
               else
                 text ""
