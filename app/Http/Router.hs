@@ -50,14 +50,16 @@ root db secret logger req respond =
       Http.Auth.register db secret logger req respond
     ("GET", ["api", "auth", "validate"]) ->
       Http.Auth.validate db logger req respond
-    ("GET", ["api", "finance", "accounts", "list"]) ->
+    ("GET", ["api", "accounts", "list"]) ->
       Http.Finance.Accounts.list db logger req respond
-    ("GET", ["api", "finance", "transactions", "list"]) ->
+    ("GET", ["api", "transactions", "list"]) ->
       Http.Finance.Transactions.list db logger req respond
-    ("POST", ["api", "finance", "accounts", "open"]) ->
+    ("POST", ["api", "accounts", "open"]) ->
       Http.Finance.Accounts.open db logger req respond
-    ("POST", ["api", "finance", "accounts", "close"]) ->
+    ("POST", ["api", "accounts", "close"]) ->
       Http.Finance.Accounts.close db logger req respond
+    ("POST", ["api", "transactions", "new"]) ->
+      Http.Finance.Transactions.new db logger req respond
     -- Frontend routes
     ("GET", ["style.css"]) ->
       respond $
