@@ -2,6 +2,7 @@
 
 module Http (serve, serveTLS) where
 
+import Data.Password.Argon2 (Argon2, PasswordHash)
 import Data.String (fromString)
 import qualified Data.Text as T
 import qualified Database
@@ -27,8 +28,8 @@ splitHostPort s = case s of
           [(n, "")] | n >= 0 && n <= 65535 -> Just (host, n)
           _ -> Nothing
 
-serve :: String -> String -> IO ()
-serve addr db =
+serve :: String -> String -> PasswordHash Argon2 -> IO ()
+serve addr db secret =
   case splitHostPort addr of
     Just (h, p) ->
       withLogger $ \logger -> do
@@ -45,12 +46,12 @@ serve addr db =
         logMsg logger Info "Database initialized"
 
         runSettings s $
-            Http.Router.root conn logger
+          Http.Router.root conn secret logger
     Nothing ->
       hPutStrLn stderr "heft: invalid address"
 
-serveTLS :: String -> String -> String -> String -> IO ()
-serveTLS addr db cert key =
+serveTLS :: String -> String -> PasswordHash Argon2 ->  String -> String -> IO ()
+serveTLS addr db secret cert key =
   case splitHostPort addr of
     Just (h, p) ->
       withLogger $ \logger -> do
@@ -64,6 +65,6 @@ serveTLS addr db cert key =
         logMsg logger Info "Database initialized"
 
         runTLS (tlsSettings cert key) s $
-            Http.Router.root conn logger
+          Http.Router.root conn secret logger
     Nothing ->
       hPutStrLn stderr "heft: invalid address"

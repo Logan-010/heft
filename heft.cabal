@@ -1,24 +1,19 @@
-cabal-version: 3.0
-name:          heft
-version:       0.1.0.0
-synopsis:      Personal financial tracking service
-
--- description:
-homepage:      https://github.com/Logan-010/heft
-license:       MIT
-license-file:  LICENSE
-author:        Logan-010
-maintainer:    loganbreezestl@gmail.com
-
--- copyright:
-category:      Finance
-build-type:    Simple
-
+cabal-version:      3.0
+name:               heft
+version:            0.1.0.0
+synopsis:           Personal financial tracking service
+homepage:           https://github.com/Logan-010/heft
+license:            MIT
+license-file:       LICENSE
+author:             Logan-010
+maintainer:         loganbreezestl@gmail.com
+category:           Finance
+build-type:         Simple
 extra-source-files:
-  frontend/dist/index.html
   frontend/dist/elm.js
-  frontend/dist/style.css
   frontend/dist/icon.png
+  frontend/dist/index.html
+  frontend/dist/style.css
 
 common warnings
   ghc-options: -Wall -threaded
@@ -29,24 +24,29 @@ executable heft
   other-modules:
     Cli
     Database
+    Database.Auth
     Database.Migrate
     Http
+    Http.Auth
     Http.Router
     Logger
 
   -- other-extensions:
   build-depends:
-    , base           ^>=4.20.2.0
+    , aeson
+    , base           ==4.20.2.0
     , bytestring
+    , crypton
     , fast-logger
+    , file-embed
     , http-types
+    , password       ==3.1.1.0
     , sqlite-simple
     , text
     , time
     , wai
     , warp
     , warp-tls
-    , file-embed
 
   hs-source-dirs:   app
   default-language: Haskell2010

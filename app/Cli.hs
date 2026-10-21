@@ -3,11 +3,13 @@ module Cli (Cli (..), new, parse, helpMenu, versionMenu) where
 data Cli = Cli
   { addr :: String,
     db :: String,
+    secret :: Maybe String,
     https :: Bool,
     cert :: Maybe String,
     key :: Maybe String,
     help :: Bool,
-    version :: Bool
+    version :: Bool,
+    hash:: Maybe String
   }
   deriving (Show, Eq)
 
@@ -19,6 +21,8 @@ helpMenu =
       "Usage: heft[OPTIONS]",
       "",
       "Options:",
+      "  -x, --hash SECRET     Produce the hash string of a secret",
+      "  -s, --secret HASH     Hash of the login question",
       "  -a, --addr ADDR       Address to listen on (default: [::]:7766)",
       "  -d, --database PATH   Database path (default: data.db)",
       "  -H, --https           Enable HTTPS (requires cert and key)",
@@ -32,9 +36,9 @@ versionMenu :: String
 versionMenu = "heft 0.1.0.0"
 
 new :: Cli
-new = Cli "[::]:7766" "data.db" False Nothing Nothing False False
+new = Cli "[::]:7766" "data.db" Nothing False Nothing Nothing False False Nothing
 
-data Pending = Addr | Db | Cert | Key
+data Pending = Addr | Db | Cert | Key | Secret | Hash
 
 parse' :: [String] -> Maybe Pending -> Cli -> Either String Cli
 parse' args pending cli = case pending of
@@ -50,9 +54,17 @@ parse' args pending cli = case pending of
   Just Key -> case args of
     [] -> Left "missing key path"
     h : r -> parse' r Nothing $ cli {key = Just h}
+  Just Secret -> case args of
+    [] -> Left "missing secret hash"
+    h : r -> parse' r Nothing $ cli {secret = Just h}
+  Just Hash -> case args of
+    [] -> Left "missing secret"
+    h : r -> parse' r Nothing $ cli {hash = Just h}
   Nothing -> case args of
     [] -> Right cli
     h : r
+      | h `elem` ["-x", "--hash"] -> parse' r (Just Hash) cli
+      | h `elem` ["-s", "--secret"] -> parse' r (Just Secret) cli
       | h `elem` ["-a", "--addr"] -> parse' r (Just Addr) cli
       | h `elem` ["-d", "--database"] -> parse' r (Just Db) cli
       | h `elem` ["-H", "--https"] -> parse' r Nothing $ cli {https = True}
