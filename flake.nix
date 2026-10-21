@@ -23,25 +23,74 @@
         let
           pkgs = import nixpkgs { inherit system; };
 
-          #Nix has mostly old ass hackage packages so many need to be updated
-          hs =
-            hsuper:
-            pkgs.haskellPackages.override {
-              # Skip library test suites and their test-only dependencies.
-              mkDerivation = args: hsuper.mkDerivation (args // { doCheck = false; });
-              #overrides = hself: hsuper: {
-              #  pkgname = pkgs.haskellPackages.callHackageDirect {
-              #    pkg = "pkgname";
-              #    ver = "pkgversion";
-              #    sha256 = pkgs.lib.fakeHash;
-              #  } { };
-              #  pkgname2 = pkgs.haskellPackages.callHackage "pkgname2" "pkgversion2" { };
-              #};
-            };
+          hs = pkgs.haskellPackages;
+
+          frontend = pkgs.buildNpmPackage {
+            pname = "heft-frontend";
+            version = "1.0.0";
+
+            src = ./frontend;
+
+            npmDepsHash = "sha256-j7ljm26/PWRKNTTjcpNkfdxBGLpyDaidpysFyKjq81E=";
+
+            nativeBuildInputs = [
+              pkgs.elmPackages.elm
+            ];
+
+            dontNpmBuild = true;
+
+            buildPhase = ''
+              runHook preBuild
+
+              rm -rf elm-stuff .elm
+
+              ${pkgs.elmPackages.fetchElmDeps {
+                elmPackages = import ./frontend/elm-srcs.nix;
+                elmVersion = pkgs.elmPackages.elm.version;
+                registryDat = ./frontend/registry.dat;
+              }}
+
+              export ELM_HOME="$PWD/.elm"
+              test -s "$ELM_HOME/$(elm --version)/packages/registry.dat"
+
+              npm run build
+
+              runHook postBuild
+            '';
+
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p "$out"
+              cp -r dist/. "$out/"
+
+              runHook postInstall
+            '';
+          };
+
+          projectSrc = pkgs.runCommand "heft-source" { } ''
+            cp -r ${./.} $out
+            chmod -R u+w $out
+
+            rm -rf $out/frontend/dist
+            mkdir -p $out/frontend/dist
+
+            cp -r ${frontend}/. $out/frontend/dist/
+
+            test -s $out/frontend/dist/index.html
+            test -s $out/frontend/dist/main.js
+            test -s $out/frontend/dist/style.css
+            test -s $out/frontend/dist/icon.png
+          '';
+
+          haskellApp = pkgs.haskell.lib.dontCheck (hs.callCabal2nix "project" projectSrc { });
         in
         {
-          # Add dependencies
-          default = pkgs.haskell.lib.addExtraLibraries (hs.callCabal2nix "project" ./. { }) [ pkgs.zlib ];
+          default = pkgs.haskell.lib.addExtraLibraries haskellApp [
+            pkgs.zlib
+          ];
+
+          inherit frontend;
         }
       );
 
@@ -56,6 +105,7 @@
               # Compiler and build tools
               haskellPackages.ghc
               cabal-install
+              elm2nix
 
               # Language server
               haskell-language-server
@@ -82,6 +132,7 @@
               # Utilities
               haskellPackages.ghcid
               git
+              gnumake
               pkg-config
             ];
           };
