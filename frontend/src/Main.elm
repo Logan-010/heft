@@ -89,13 +89,16 @@ update msg model =
             let
                 updatedModel =
                     { model | route = routeFromUrl url }
+
+                ( loadedModel, homeCmd ) =
+                    loadHome updatedModel
             in
-            ( updatedModel, redirectIfLoggedOut updatedModel )
+            ( loadedModel, Cmd.batch [ redirectIfLoggedOut loadedModel, homeCmd ] )
 
         AuthMsg (Api.Auth.IsLoggedIn result) ->
             case result of
                 Ok _ ->
-                    ( { model | loggedIn = Just True, error = Nothing }, Cmd.none )
+                    loadHome { model | loggedIn = Just True, error = Nothing }
 
                 Err (Http.BadStatus 401) ->
                     let
@@ -129,7 +132,16 @@ update msg model =
                         _ ->
                             model.loggedIn
             in
-            ( { model | loginModel = loginModel, loggedIn = loggedIn }, Cmd.map LoginMsg loginCmd )
+            ( { model | loginModel = loginModel, loggedIn = loggedIn }
+            , Cmd.batch
+                [ Cmd.map LoginMsg loginCmd
+                , if loggedIn == Just True && model.loggedIn /= Just True then
+                    Nav.replaceUrl model.key "/"
+
+                  else
+                    Cmd.none
+                ]
+            )
 
         HomeMsg homeMsg ->
             let
@@ -137,6 +149,19 @@ update msg model =
                     Page.Home.update homeMsg model.homeModel
             in
             ( { model | homeModel = homeModel }, Cmd.map HomeMsg homeCmd )
+
+
+loadHome : Model -> ( Model, Cmd Msg )
+loadHome model =
+    if model.route == Home && model.loggedIn == Just True then
+        let
+            ( homeModel, homeCmd ) =
+                Page.Home.update Page.Home.RefreshAccounts model.homeModel
+        in
+        ( { model | homeModel = homeModel }, Cmd.map HomeMsg homeCmd )
+
+    else
+        ( model, Cmd.none )
 
 
 redirectIfLoggedOut : Model -> Cmd Msg
@@ -156,8 +181,24 @@ view model =
     in
     { document
         | body =
-            [ Html.main_ [ class "grid min-h-svh place-items-center px-4 py-8 sm:px-8 sm:py-16" ]
-                [ Html.div [ class "w-full max-w-lg min-w-0 border border-line bg-surface p-6 sm:p-10" ]
+            [ Html.main_
+                [ class
+                    (if model.route == Home then
+                        "min-h-svh p-4 sm:p-8"
+
+                     else
+                        "grid min-h-svh place-items-center px-4 py-8 sm:px-8 sm:py-16"
+                    )
+                ]
+                [ Html.div
+                    [ class
+                        (if model.route == Home then
+                            "mx-auto w-full min-w-0 max-w-screen-2xl"
+
+                         else
+                            "w-full max-w-lg min-w-0 border border-line bg-surface p-6 sm:p-10"
+                        )
+                    ]
                     (document.body
                         ++ (case model.error of
                                 Just error ->
@@ -183,7 +224,7 @@ viewRoute model =
         Home ->
             let
                 document =
-                    Page.Home.view
+                    Page.Home.view model.homeModel
             in
             { title = document.title
             , body = List.map (Html.map HomeMsg) document.body

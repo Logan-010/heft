@@ -32,7 +32,8 @@ data ListRequest = ListRequest
 instance FromJSON ListRequest
 
 data ListResponse = ListResponse
-  { transactionName :: Text,
+  { id :: Int,
+    transactionName :: Text,
     ammount :: Int,
     timestamp :: Int
   }
@@ -74,7 +75,7 @@ list db logger req respond =
                   status200
                   [("Content-Type", "aplication/json")]
                 $ encode
-                $ map (\(na, a, ti) -> ListResponse (T.pack na) a ti) t
+                $ map (\(i, na, a, ti) -> ListResponse i (T.pack na) a ti) t
 
 data NewRequest = NewRequest
   { accountName :: Text,
@@ -99,7 +100,7 @@ new db logger req respond =
             $ LBS.pack err
         Right u ->
           getTimestamp >>= \t ->
-            try (Database.Finance.Transactions.new db u (T.unpack n) (T.unpack a) m t) >>= \case
+            try (Database.Finance.Transactions.new db u (T.unpack a) (T.unpack n) m t) >>= \case
               Left (err :: IOException) ->
                 Logger.logMsg
                   logger

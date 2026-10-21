@@ -15,7 +15,8 @@ type alias Account =
 
 
 type alias Transaction =
-    { transactionName : String
+    { id : Int
+    , transactionName : String
     , ammount : Int
     , timestamp : Int
     }
@@ -45,9 +46,10 @@ accountsDecoder =
 transactionsDecoder : Json.Decode.Decoder (Array Transaction)
 transactionsDecoder =
     Json.Decode.array
-        (Json.Decode.map3
+        (Json.Decode.map4
             Transaction
-            (Json.Decode.at [ "name" ] Json.Decode.string)
+            (Json.Decode.at [ "id" ] Json.Decode.int)
+            (Json.Decode.at [ "transactionName" ] Json.Decode.string)
             (Json.Decode.at [ "ammount" ] Json.Decode.int)
             (Json.Decode.at [ "timestamp" ] Json.Decode.int)
         )
@@ -75,7 +77,7 @@ encodeCloseAccount name =
 
 closeAccount : String -> String -> Cmd FinanceMsg
 closeAccount url name =
-    Http.post { url = Url.Builder.crossOrigin url [ "api", "accounts", "close" ] [], body = Http.jsonBody (encodeCloseAccount name), expect = Http.expectString CloseAccount }
+    Http.request { method = "DELETE", headers = [], url = Url.Builder.crossOrigin url [ "api", "accounts", "close" ] [], body = Http.jsonBody (encodeCloseAccount name), expect = Http.expectString CloseAccount, timeout = Nothing, tracker = Nothing }
 
 
 encodeListTransactions : String -> Json.Encode.Value
@@ -85,7 +87,7 @@ encodeListTransactions name =
 
 listTransactions : String -> String -> Cmd FinanceMsg
 listTransactions url account =
-    Http.request { method = "GET", headers = [], url = Url.Builder.crossOrigin url [ "api", "transactions", "list" ] [], body = Http.jsonBody (encodeListTransactions account), expect = Http.expectJson ListTransactions transactionsDecoder, timeout = Nothing, tracker = Nothing }
+    Http.post { url = Url.Builder.crossOrigin url [ "api", "transactions", "list" ] [], body = Http.jsonBody (encodeListTransactions account), expect = Http.expectJson ListTransactions transactionsDecoder }
 
 
 encodeNewTransaction : String -> String -> Int -> Json.Encode.Value
@@ -105,7 +107,7 @@ encodeRemoveTransaction accountName id =
 
 removeTransaction : String -> String -> Int -> Cmd FinanceMsg
 removeTransaction url accountName id =
-    Http.request { method = "DELETE", headers = [], url = Url.Builder.crossOrigin url [ "api", "transactions", "remove" ] [], body = Http.jsonBody (encodeRemoveTransaction accountName id), expect = Http.expectString RemoveTransaction, timeout = Nothing, tracker = Nothing }
+    Http.request { method = "DELETE", headers = [], url = Url.Builder.crossOrigin url [ "api", "transactions", "delete" ] [], body = Http.jsonBody (encodeRemoveTransaction accountName id), expect = Http.expectString RemoveTransaction, timeout = Nothing, tracker = Nothing }
 
 
 encodeEditTransaction : String -> Int -> String -> Int -> Json.Encode.Value

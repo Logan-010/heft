@@ -53,7 +53,7 @@ edit db username accountName transactionId transactionName amount timestamp = do
       IO [Only Int]
   pure $ if null transactions then Just "Error: Transaction not found" else Nothing
 
-list :: Connection -> String -> String -> IO (Either String [(String, Int, Int)])
+list :: Connection -> String -> String -> IO (Either String [(Int, String, Int, Int)])
 list db username accountName = withTransaction db $ do
   account <- findAccount db username accountName
   case account of
@@ -61,7 +61,7 @@ list db username accountName = withTransaction db $ do
       Right
         <$> query
           db
-          "SELECT name, amount, timestamp FROM transactions \
+          "SELECT id, name, amount, timestamp FROM transactions \
           \WHERE account_id = ? AND user_id = ? ORDER BY timestamp, id"
           (accountId, userId)
     Left err -> pure $ Left err

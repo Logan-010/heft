@@ -54,7 +54,7 @@ root db secret logger req respond =
       Http.Auth.validate db logger req respond
     ("GET", ["api", "accounts", "list"]) ->
       Http.Finance.Accounts.list db logger req respond
-    ("GET", ["api", "transactions", "list"]) ->
+    ("POST", ["api", "transactions", "list"]) ->
       Http.Finance.Transactions.list db logger req respond
     ("POST", ["api", "accounts", "open"]) ->
       Http.Finance.Accounts.open db logger req respond

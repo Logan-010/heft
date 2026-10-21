@@ -1,4 +1,4 @@
-module Style exposing (buttonPrimary, buttonQuiet, buttonSecondary, heading, input, message)
+module Style exposing (buttonPrimary, buttonQuiet, buttonSecondary, folder, heading, input, label, message, money, panel, toolbar)
 
 
 heading : String
@@ -34,3 +34,28 @@ buttonSecondary =
 buttonQuiet : String
 buttonQuiet =
     button ++ " border-transparent text-muted enabled:hover:border-line enabled:hover:text-ink"
+
+
+panel : String
+panel =
+    "min-w-0 border border-line bg-surface"
+
+
+toolbar : String
+toolbar =
+    "flex flex-wrap items-center gap-2"
+
+
+folder : String
+folder =
+    "ml-2 space-y-2 border-l border-line pl-3"
+
+
+money : String
+money =
+    "whitespace-nowrap tabular-nums"
+
+
+label : String
+label =
+    "block min-w-0 space-y-1 text-sm text-muted"
