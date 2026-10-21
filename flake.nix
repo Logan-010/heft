@@ -88,7 +88,7 @@
             cp -r ${frontend}/. $out/frontend/dist/
 
             test -s $out/frontend/dist/index.html
-            test -s $out/frontend/dist/main.js
+            test -s $out/frontend/dist/elm.js
             test -s $out/frontend/dist/style.css
             test -s $out/frontend/dist/icon.png
           '';

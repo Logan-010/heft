@@ -1,12 +1,14 @@
 .PHONY: build
-build:
-	cd frontend && npm run build
+build: build-frontend
 	cabal build exe:heft --project-file=cabal.project.release
 	strip --strip-all $$(cabal list-bin exe:heft)
 
-.PHONY: build-dev
-build-dev:
+.PHONY: build-frontend
+build-frontend:
 	cd frontend && npm run build
+
+.PHONY: build-dev
+build-dev: build-frontend
 	cabal build exe:heft
 
 .PHONY: run

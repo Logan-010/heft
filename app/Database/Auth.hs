@@ -16,7 +16,9 @@ validateSession db session =
   fmap fromOnly . listToMaybe
     <$> query
       db
-      "SELECT id FROM sessions WHERE id = ? AND expires_at > unixepoch()"
+      "SELECT users.username FROM sessions \
+      \JOIN users ON users.id = sessions.user_id \
+      \WHERE sessions.id = ? AND sessions.expires_at > unixepoch()"
       (Only session)
 
 createSession :: Connection -> String -> IO String

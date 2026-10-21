@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "mkdir -p dist && elm make src/Main.elm --optimize --output=dist/main.js && tailwindcss -i ./src/input.css -o ./dist/style.css --minify && cp index.html icon.png dist/",
+    "build": "mkdir -p dist && elm make src/Main.elm --optimize --output=dist/elm.js && tailwindcss -i ./src/input.css -o ./dist/style.css --minify && cp index.html icon.png dist/",
     "check": "elm make src/Main.elm --output=/dev/null",
     "format": "elm-format src/ --yes",
     "test": "elm-test"

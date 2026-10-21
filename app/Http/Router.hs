@@ -68,7 +68,7 @@ root db secret logger req respond =
           [("Content-Type", "application/javascript")]
           elmJs
     -- API 404
-    (_, ["api", _]) -> respond404
+    (_, "api" : _) -> respond404
     ("GET", _) ->
       respond $
         responseLBS

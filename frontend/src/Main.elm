@@ -1,44 +1,72 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, h1, p, text)
-import Html.Events exposing (onClick)
+import Browser.Navigation as Nav
+import Page.Home
+import Page.NotFound
+import Url exposing (Url)
+import Url.Parser as Parser
 
 
 type alias Model =
-    Int
+    { key : Nav.Key
+    , route : Route
+    }
+
+
+type Route
+    = Home
+    | NotFound
+
+
+routeFromUrl : Url -> Route
+routeFromUrl url =
+    Parser.parse (Parser.map Home Parser.top) url
+        |> Maybe.withDefault NotFound
 
 
 type Msg
-    = Increment
-    | Decrement
+    = UrlRequested Browser.UrlRequest
+    | UrlChanged Url
 
 
 main : Program () Model Msg
 main =
-    Browser.sandbox
-        { init = 0
+    Browser.application
+        { init = init
         , update = update
         , view = view
+        , subscriptions = \_ -> Sub.none
+        , onUrlRequest = UrlRequested
+        , onUrlChange = UrlChanged
         }
 
 
-update : Msg -> Model -> Model
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init _ url key =
+    ( { key = key, route = routeFromUrl url }, Cmd.none )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Increment ->
-            model + 1
+        UrlRequested request ->
+            case request of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
 
-        Decrement ->
-            model - 1
+                Browser.External url ->
+                    ( model, Nav.load url )
+
+        UrlChanged url ->
+            ( { model | route = routeFromUrl url }, Cmd.none )
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    div []
-        [ h1 [] [ text "Heft" ]
-        , p [] [ text "Personal financial tracking" ]
-        , button [ onClick Decrement ] [ text "-" ]
-        , text (" " ++ String.fromInt model ++ " ")
-        , button [ onClick Increment ] [ text "+" ]
-        ]
+    case model.route of
+        Home ->
+            Page.Home.view
+
+        NotFound ->
+            Page.NotFound.view
