@@ -4570,7 +4570,44 @@ function _Url_percentDecode(string)
 	{
 		return $elm$core$Maybe$Nothing;
 	}
-}var $author$project$Main$UrlChanged = function (a) {
+}
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
+var $author$project$Main$UrlChanged = function (a) {
 	return {$: 1, a: a};
 };
 var $author$project$Main$UrlRequested = function (a) {
@@ -5363,7 +5400,7 @@ var $author$project$Main$AuthMsg = function (a) {
 	return {$: 2, a: a};
 };
 var $author$project$Page$Home$init = function (url) {
-	return {H: _List_Nil, t: '0', k: $elm$core$Maybe$Nothing, f: false, m: $elm$core$Maybe$Nothing, aW: '', j: $elm$core$Maybe$Nothing, r: _List_Nil, x: false, a8: '', X: url};
+	return {H: _List_Nil, t: '0.00', k: $elm$core$Maybe$Nothing, f: false, m: $elm$core$Maybe$Nothing, aW: '', j: $elm$core$Maybe$Nothing, r: _List_Nil, x: false, a8: '', X: url};
 };
 var $author$project$Page$Login$init = function (u) {
 	return {f: false, m: $elm$core$Maybe$Nothing, C: '', E: false, K: '', X: u, F: ''};
@@ -6771,6 +6808,61 @@ var $author$project$Api$Finance$closeAccount = F2(
 					_List_Nil)
 			});
 	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$core$String$dropRight = F2(
+	function (n, string) {
+		return (n < 1) ? string : A3($elm$core$String$slice, 0, -n, string);
+	});
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var $elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			$elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var $elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3($elm$core$String$repeatHelp, n, chunk, '');
+	});
+var $elm$core$String$padLeft = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)),
+			string);
+	});
+var $elm$core$String$right = F2(
+	function (n, string) {
+		return (n < 1) ? '' : A3(
+			$elm$core$String$slice,
+			-n,
+			$elm$core$String$length(string),
+			string);
+	});
+var $author$project$Money$format = function (amount) {
+	var sign = (amount < 0) ? '-' : '';
+	var digits = A3(
+		$elm$core$String$padLeft,
+		3,
+		'0',
+		$elm$core$String$fromInt(
+			$elm$core$Basics$abs(amount)));
+	return sign + (A2($elm$core$String$dropRight, 2, digits) + ('.' + A2($elm$core$String$right, 2, digits)));
+};
 var $author$project$Api$Finance$RemoveTransaction = function (a) {
 	return {$: 5, a: a};
 };
@@ -6917,15 +7009,9 @@ var $author$project$Api$Finance$openAccount = F4(
 					_List_Nil)
 			});
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$String$dropRight = F2(
-	function (n, string) {
-		return (n < 1) ? string : A3($elm$core$String$slice, 0, -n, string);
-	});
 var $elm$core$String$endsWith = _String_endsWith;
 var $elm$core$String$filter = _String_filter;
+var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -6935,6 +7021,15 @@ var $elm$core$List$member = F2(
 			},
 			xs);
 	});
+var $elm$core$String$padRight = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			string,
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)));
+	});
 var $elm$core$String$replace = F3(
 	function (before, after, string) {
 		return A2(
@@ -6942,7 +7037,15 @@ var $elm$core$String$replace = F3(
 			after,
 			A2($elm$core$String$split, before, string));
 	});
-var $author$project$Page$Home$parseAmount = function (amount) {
+var $author$project$Money$parse = function (amount) {
+	var digits = function (value) {
+		return A2(
+			$elm$core$String$all,
+			function (character) {
+				return (character >= '0') && (character <= '9');
+			},
+			value);
+	};
 	var compact = A3(
 		$elm$core$String$replace,
 		'−',
@@ -6959,31 +7062,42 @@ var $author$project$Page$Home$parseAmount = function (amount) {
 			amount));
 	var normalized = function () {
 		if (A2($elm$core$String$startsWith, '(', compact) && A2($elm$core$String$endsWith, ')', compact)) {
-			var unsigned = A2(
+			var enclosed = A2(
 				$elm$core$String$dropRight,
 				1,
 				A2($elm$core$String$dropLeft, 1, compact));
-			return (A2($elm$core$String$startsWith, '-', unsigned) || A2($elm$core$String$startsWith, '+', unsigned)) ? '' : ('-' + unsigned);
+			return (A2($elm$core$String$startsWith, '-', enclosed) || A2($elm$core$String$startsWith, '+', enclosed)) ? '' : ('-' + enclosed);
 		} else {
 			return compact;
 		}
 	}();
-	var _v0 = A2($elm$core$String$split, '.', normalized);
+	var negative = A2($elm$core$String$startsWith, '-', normalized);
+	var hundredths = F2(
+		function (whole, fraction) {
+			return (($elm$core$String$isEmpty(whole) && $elm$core$String$isEmpty(fraction)) || ((!(digits(whole) && digits(fraction))) || ($elm$core$String$length(fraction) > 2))) ? $elm$core$Maybe$Nothing : A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return negative ? (-value) : value;
+				},
+				$elm$core$String$toInt(
+					_Utils_ap(
+						$elm$core$String$isEmpty(whole) ? '0' : whole,
+						A3($elm$core$String$padRight, 2, '0', fraction))));
+		});
+	var unsigned = (negative || A2($elm$core$String$startsWith, '+', normalized)) ? A2($elm$core$String$dropLeft, 1, normalized) : normalized;
+	var _v0 = A2($elm$core$String$split, '.', unsigned);
 	_v0$2:
 	while (true) {
 		if (_v0.b) {
 			if (!_v0.b.b) {
 				var whole = _v0.a;
-				return $elm$core$String$toInt(whole);
+				return A2(hundredths, whole, '');
 			} else {
 				if (!_v0.b.b.b) {
 					var whole = _v0.a;
 					var _v1 = _v0.b;
 					var fraction = _v1.a;
-					return ((!$elm$core$String$isEmpty(fraction)) && A2(
-						$elm$core$String$all,
-						$elm$core$Basics$eq('0'),
-						fraction)) ? $elm$core$String$toInt(whole) : $elm$core$Maybe$Nothing;
+					return A2(hundredths, whole, fraction);
 				} else {
 					break _v0$2;
 				}
@@ -7029,9 +7143,9 @@ var $author$project$Page$Home$save = function (model) {
 	if (!$author$project$Page$Home$validName(name)) {
 		return invalid('Enter a name with non-empty folder names separated by colons.');
 	} else {
-		var _v0 = $author$project$Page$Home$parseAmount(model.t);
+		var _v0 = $author$project$Money$parse(model.t);
 		if (_v0.$ === 1) {
-			return invalid('Enter a whole-number amount, such as 100,000 or $100,000. Use a minus sign or parentheses for a decrease. Fractional amounts are not supported.');
+			return invalid('Enter an amount with at most two decimal places, such as 100,000.50 or $100,000.50. Use a minus sign or parentheses for a decrease.');
 		} else {
 			var amount = _v0.a;
 			var _v1 = model.k;
@@ -7115,7 +7229,7 @@ var $author$project$Page$Home$updateReady = F2(
 					_Utils_update(
 						model,
 						{
-							t: '0',
+							t: '0.00',
 							k: $elm$core$Maybe$Just($author$project$Page$Home$AccountEditor),
 							m: $elm$core$Maybe$Nothing,
 							aW: '',
@@ -7138,7 +7252,7 @@ var $author$project$Page$Home$updateReady = F2(
 					_Utils_update(
 						model,
 						{
-							t: '0',
+							t: '0.00',
 							k: $elm$core$Maybe$Just(
 								$author$project$Page$Home$TransactionEditor($elm$core$Maybe$Nothing)),
 							m: $elm$core$Maybe$Nothing,
@@ -7151,7 +7265,7 @@ var $author$project$Page$Home$updateReady = F2(
 					_Utils_update(
 						model,
 						{
-							t: $elm$core$String$fromInt(transaction.aK),
+							t: $author$project$Money$format(transaction.aK),
 							k: $elm$core$Maybe$Just(
 								$author$project$Page$Home$TransactionEditor(
 									$elm$core$Maybe$Just(transaction.aT))),
@@ -7776,7 +7890,7 @@ var $author$project$Page$Home$SelectAccount = function (a) {
 };
 var $author$project$Page$Home$money = F2(
 	function (unit, amount) {
-		return $elm$core$String$fromInt(amount) + (' ' + unit);
+		return $author$project$Money$format(amount) + (' ' + unit);
 	});
 var $author$project$Style$money = 'whitespace-nowrap tabular-nums';
 var $elm$html$Html$span = _VirtualDom_node('span');
@@ -7957,12 +8071,12 @@ var $author$project$Page$Home$viewEditor = F2(
 								}
 							}())
 						])),
-					A5(field, 'Name / folder path', 'expenses:grocery:snacks', 'text', model.aW, $author$project$Page$Home$UpdateName),
+					A5(field, 'Name / folder path', 'assets:personal:xyz', 'text', model.aW, $author$project$Page$Home$UpdateName),
 					_Utils_eq(editor, $author$project$Page$Home$AccountEditor) ? A5(field, 'Unit (defaults to USD)', 'USD', 'text', model.a8, $author$project$Page$Home$UpdateUnit) : $elm$html$Html$text(''),
 					A5(
 					field,
 					_Utils_eq(editor, $author$project$Page$Home$AccountEditor) ? 'Initial balance' : 'Amount',
-					'0',
+					'0.00',
 					'text',
 					model.t,
 					$author$project$Page$Home$UpdateAmount),
@@ -7974,7 +8088,7 @@ var $author$project$Page$Home$viewEditor = F2(
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('Use colons for folders. Amounts may include currency symbols and separators, such as $100,000. Use a minus sign or parentheses for a decrease; whole numbers only.')
+							$elm$html$Html$text('Use colons for folders. Amounts may include currency symbols and separators, such as $100,000.50, with at most two decimal places. Use a minus sign or parentheses for a decrease.')
 						])),
 					A2(
 					$elm$html$Html$div,

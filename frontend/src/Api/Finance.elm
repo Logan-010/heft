@@ -7,6 +7,8 @@ import Json.Encode
 import Url.Builder
 
 
+{-| Balances are integer hundredths of the account unit.
+-}
 type alias Account =
     { name : String
     , unit : String
@@ -14,6 +16,8 @@ type alias Account =
     }
 
 
+{-| Transaction amounts are integer hundredths of the account unit.
+-}
 type alias Transaction =
     { id : Int
     , transactionName : String

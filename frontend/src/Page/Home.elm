@@ -9,6 +9,7 @@ import Html exposing (Html, button, details, div, footer, form, h1, h2, input, l
 import Html.Attributes exposing (attribute, class, disabled, placeholder, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
+import Money
 import Style
 
 
@@ -60,7 +61,7 @@ init url =
     , editor = Nothing
     , name = ""
     , unit = ""
-    , amount = "0"
+    , amount = "0.00"
     }
 
 
@@ -174,7 +175,7 @@ updateReady msg model =
                 { model | selected = Just name, transactions = [], transactionsLoaded = False, editor = Nothing }
 
         CreateAccount ->
-            ( { model | editor = Just AccountEditor, name = "", unit = "", amount = "0", message = Nothing }, Cmd.none )
+            ( { model | editor = Just AccountEditor, name = "", unit = "", amount = "0.00", message = Nothing }, Cmd.none )
 
         CloseAccount ->
             case selectedAccount model of
@@ -185,10 +186,10 @@ updateReady msg model =
                     ( model, Cmd.none )
 
         AddTransaction ->
-            ( { model | editor = Just (TransactionEditor Nothing), name = "", amount = "0", message = Nothing }, Cmd.none )
+            ( { model | editor = Just (TransactionEditor Nothing), name = "", amount = "0.00", message = Nothing }, Cmd.none )
 
         EditTransaction transaction ->
-            ( { model | editor = Just (TransactionEditor (Just transaction.id)), name = transaction.transactionName, amount = String.fromInt transaction.ammount, message = Nothing }, Cmd.none )
+            ( { model | editor = Just (TransactionEditor (Just transaction.id)), name = transaction.transactionName, amount = Money.format transaction.ammount, message = Nothing }, Cmd.none )
 
         RemoveTransaction id ->
             case model.selected of
@@ -222,43 +223,6 @@ validName name =
     String.split ":" name |> List.all (\part -> not (String.isEmpty (String.trim part)))
 
 
-parseAmount : String -> Maybe Int
-parseAmount amount =
-    let
-        compact =
-            String.filter (\character -> not (List.member character [ ',', ' ', '\u{00A0}', '\u{202F}', '\t', '\n', '\u{000D}', '_', '\'', '$', '€', '£', '¥', '₹', '₩' ])) amount
-                |> String.replace "−" "-"
-
-        normalized =
-            if String.startsWith "(" compact && String.endsWith ")" compact then
-                let
-                    unsigned =
-                        String.dropLeft 1 compact |> String.dropRight 1
-                in
-                if String.startsWith "-" unsigned || String.startsWith "+" unsigned then
-                    ""
-
-                else
-                    "-" ++ unsigned
-
-            else
-                compact
-    in
-    case String.split "." normalized of
-        [ whole ] ->
-            String.toInt whole
-
-        [ whole, fraction ] ->
-            if not (String.isEmpty fraction) && String.all ((==) '0') fraction then
-                String.toInt whole
-
-            else
-                Nothing
-
-        _ ->
-            Nothing
-
-
 save : Model -> ( Model, Cmd Msg )
 save model =
     let
@@ -272,9 +236,9 @@ save model =
         invalid "Enter a name with non-empty folder names separated by colons."
 
     else
-        case parseAmount model.amount of
+        case Money.parse model.amount of
             Nothing ->
-                invalid "Enter a whole-number amount, such as 100,000 or $100,000. Use a minus sign or parentheses for a decrease. Fractional amounts are not supported."
+                invalid "Enter an amount with at most two decimal places, such as 100,000.50 or $100,000.50. Use a minus sign or parentheses for a decrease."
 
             Just amount ->
                 case model.editor of
@@ -511,7 +475,7 @@ viewTotals model account =
 
 money : String -> Int -> String
 money unit amount =
-    String.fromInt amount ++ " " ++ unit
+    Money.format amount ++ " " ++ unit
 
 
 viewEditor : Model -> Editor -> Html Msg
@@ -537,7 +501,7 @@ viewEditor model editor =
                         "Edit transaction"
                 )
             ]
-        , field "Name / folder path" "expenses:grocery:snacks" "text" model.name UpdateName
+        , field "Name / folder path" "assets:personal:xyz" "text" model.name UpdateName
         , if editor == AccountEditor then
             field "Unit (defaults to USD)" "USD" "text" model.unit UpdateUnit
 
@@ -550,11 +514,11 @@ viewEditor model editor =
              else
                 "Amount"
             )
-            "0"
+            "0.00"
             "text"
             model.amount
             UpdateAmount
-        , p [ class "text-xs text-muted" ] [ text "Use colons for folders. Amounts may include currency symbols and separators, such as $100,000. Use a minus sign or parentheses for a decrease; whole numbers only." ]
+        , p [ class "text-xs text-muted" ] [ text "Use colons for folders. Amounts may include currency symbols and separators, such as $100,000.50, with at most two decimal places. Use a minus sign or parentheses for a decrease." ]
         , div [ class Style.toolbar ]
             [ button [ type_ "submit", class Style.buttonPrimary, disabled model.loading ] [ text "Save" ]
             , action model Style.buttonQuiet Cancel "Cancel"
