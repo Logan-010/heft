@@ -31,6 +31,8 @@ executable heft
     Http
     Http.Auth
     Http.Router
+    Http.Finance.Accounts
+    Http.Finance.Transactions
     Logger
 
   -- other-extensions:
@@ -38,6 +40,7 @@ executable heft
     , aeson
     , base           ==4.20.2.0
     , bytestring
+    , cookie
     , crypton
     , fast-logger
     , file-embed

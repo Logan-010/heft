@@ -9,6 +9,7 @@ module Http.Auth (authenticate, register, login, validate) where
 import Control.Exception (IOException, try)
 import Data.Aeson (FromJSON, eitherDecode)
 import qualified Data.ByteString.Char8 as BS
+import Data.ByteString.Builder (toLazyByteString)
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import Data.Password.Argon2 (Argon2, PasswordCheck (PasswordCheckFail, PasswordCheckSuccess), PasswordHash, checkPassword, mkPassword)
 import Data.Text (Text)
@@ -20,10 +21,14 @@ import GHC.Generics (Generic)
 import Logger (Logger)
 import qualified Logger
 import Network.HTTP.Types (Status, status200, status400, status401, status409, status500)
-import Network.Wai (Application, Request, requestHeaders, responseLBS, strictRequestBody)
+import Network.Wai (Application, Request, isSecure, requestHeaders, responseLBS, strictRequestBody)
+import Web.Cookie (SetCookie (..), defaultSetCookie, parseCookies, renderSetCookie, sameSiteLax)
+
+sessionCookieName :: BS.ByteString
+sessionCookieName = "session"
 
 authorize :: Connection -> Logger -> String -> LBS.ByteString -> Application
-authorize db logger user body _ respond =
+authorize db logger user body req respond =
   try (Database.Auth.createSession db user) >>= \case
     Left (err :: IOException) ->
       Logger.logMsg logger Logger.Warn (T.pack $ show err)
@@ -33,7 +38,18 @@ authorize db logger user body _ respond =
         responseLBS
           status200
           [ ("Content-Type", "text/plain"),
-            ("Authorization", BS.pack ("Bearer " ++ session))
+            ( "Set-Cookie",
+              LBS.toStrict . toLazyByteString . renderSetCookie $
+                defaultSetCookie
+                  { setCookieName = sessionCookieName,
+                    setCookieValue = BS.pack session,
+                    setCookiePath = Just "/",
+                    setCookieMaxAge = Just 2592000,
+                    setCookieHttpOnly = True,
+                    setCookieSecure = isSecure req,
+                    setCookieSameSite = Just sameSiteLax
+                  }
+            )
           ]
           body
 
@@ -54,7 +70,7 @@ login db logger req respond =
           status400
           [("Content-Type", "text/plain")]
           "Bad request"
-    Right (LoginRequest u p) -> do
+    Right (LoginRequest u p) ->
       try (Database.Auth.getPasswordHash db $ T.unpack u) >>= \case
         Left (err :: IOException) ->
           Logger.logMsg
@@ -126,15 +142,14 @@ register db appSecret logger req respond =
 
 authenticate :: Connection -> Request -> IO (Either (Status, String) String)
 authenticate db req =
-  case lookup "Authorization" (requestHeaders req) of
-    Just auth ->
-      case BS.stripPrefix "Bearer " auth of
-        Just session ->
-          Database.Auth.validateSession db (BS.unpack session) >>= \case
-            Just user -> pure $ Right user
-            Nothing -> pure $ Left (status401, "Invalid session")
-        Nothing -> pure $ Left (status401, "Invalid authorization header")
-    Nothing -> pure $ Left (status400, "Missing authorization header")
+  case lookup sessionCookieName cookies of
+    Just session ->
+      Database.Auth.validateSession db (BS.unpack session) >>= \case
+        Just user -> pure $ Right user
+        Nothing -> pure $ Left (status401, "Invalid session")
+    Nothing -> pure $ Left (status401, "Missing session cookie")
+  where
+    cookies = concatMap (parseCookies . snd) $ filter ((== "Cookie") . fst) (requestHeaders req)
 
 validate :: Connection -> Logger -> Application
 validate db logger req respond =

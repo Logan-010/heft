@@ -8,6 +8,7 @@ import Data.FileEmbed (embedFileRelative)
 import Data.Password.Argon2 (Argon2, PasswordHash)
 import Database.SQLite.Simple (Connection)
 import qualified Http.Auth
+import qualified Http.Finance.Accounts
 import Logger (Logger)
 import Network.HTTP.Types (status200, status404)
 import Network.Wai
@@ -48,6 +49,12 @@ root db secret logger req respond =
       Http.Auth.register db secret logger req respond
     ("GET", ["api", "auth", "validate"]) ->
       Http.Auth.validate db logger req respond
+    ("POST", ["api", "finance", "accounts", "open"]) ->
+      Http.Finance.Accounts.open db logger req respond
+    ("POST", ["api", "finance", "accounts", "close"]) ->
+      Http.Finance.Accounts.close db logger req respond
+    ("GET", ["api", "finance", "accounts", "list"]) ->
+      Http.Finance.Accounts.list db logger req respond
     -- Frontend routes
     ("GET", ["style.css"]) ->
       respond $
