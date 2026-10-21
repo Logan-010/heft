@@ -14,8 +14,7 @@ import Style
 
 
 type alias Model =
-    { url : String
-    , accounts : List Finance.Account
+    { accounts : List Finance.Account
     , selected : Maybe String
     , transactions : List Finance.Transaction
     , loading : Bool
@@ -49,10 +48,9 @@ type Msg
     | Save
 
 
-init : String -> Model
-init url =
-    { url = url
-    , accounts = []
+init : Model
+init =
+    { accounts = []
     , selected = Nothing
     , transactions = []
     , loading = False
@@ -72,7 +70,7 @@ request cmd model =
 
 refresh : Model -> ( Model, Cmd Msg )
 refresh model =
-    request (Finance.listAccounts model.url) { model | transactionsLoaded = False }
+    request Finance.listAccounts { model | transactionsLoaded = False }
 
 
 selectedAccount : Model -> Maybe Finance.Account
@@ -108,7 +106,7 @@ update msg model =
                             in
                             case selected of
                                 Just name ->
-                                    request (Finance.listTransactions model.url name) updated
+                                    request (Finance.listTransactions name) updated
 
                                 Nothing ->
                                     ( { updated | loading = False }, Cmd.none )
@@ -171,7 +169,7 @@ updateReady msg model =
             refresh model
 
         SelectAccount name ->
-            request (Finance.listTransactions model.url name)
+            request (Finance.listTransactions name)
                 { model | selected = Just name, transactions = [], transactionsLoaded = False, editor = Nothing }
 
         CreateAccount ->
@@ -180,7 +178,7 @@ updateReady msg model =
         CloseAccount ->
             case selectedAccount model of
                 Just account ->
-                    request (Finance.closeAccount model.url account.name) model
+                    request (Finance.closeAccount account.name) model
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -194,7 +192,7 @@ updateReady msg model =
         RemoveTransaction id ->
             case model.selected of
                 Just account ->
-                    request (Finance.removeTransaction model.url account id) model
+                    request (Finance.removeTransaction account id) model
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -251,7 +249,7 @@ save model =
                                 else
                                     String.trim model.unit
                         in
-                        request (Finance.openAccount model.url name unit amount) model
+                        request (Finance.openAccount name unit amount) model
 
                     Just (TransactionEditor id) ->
                         case model.selected of
@@ -259,10 +257,10 @@ save model =
                                 request
                                     (case id of
                                         Just transactionId ->
-                                            Finance.editTransaction model.url account transactionId name amount
+                                            Finance.editTransaction account transactionId name amount
 
                                         Nothing ->
-                                            Finance.newTransaction model.url account name amount
+                                            Finance.newTransaction account name amount
                                     )
                                     model
 

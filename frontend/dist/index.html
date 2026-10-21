@@ -11,7 +11,26 @@
   <div id="app"></div>
   <script src="/elm.js"></script>
   <script>
-    Elm.Main.init({ node: document.getElementById("app") });
+    // The browser parses the host, including IPv6 literals. Elm only needs the path.
+    const app = Elm.Main.init({ flags: window.location.pathname });
+    const notifyPathChanged = () => app.ports.pathChanged.send(window.location.pathname);
+
+    app.ports.replacePath.subscribe(path => {
+      window.history.replaceState(null, "", path);
+      notifyPathChanged();
+    });
+
+    window.addEventListener("popstate", notifyPathChanged);
+    document.addEventListener("click", event => {
+      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      if (!link || link.hasAttribute("download") || (link.target && link.target !== "_self")) return;
+      const url = new URL(link.href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      event.preventDefault();
+      window.history.pushState(null, "", url.pathname + url.search + url.hash);
+      notifyPathChanged();
+    });
   </script>
 </body>
 </html>

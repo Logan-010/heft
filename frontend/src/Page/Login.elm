@@ -16,7 +16,6 @@ type alias Model =
     , register : Bool
     , message : Maybe String
     , loading : Bool
-    , url : String
     }
 
 
@@ -32,9 +31,9 @@ type Msg
     | Toggle
 
 
-init : String -> Model
-init u =
-    { username = "", password = "", secret = "", register = False, message = Nothing, loading = False, url = u }
+init : Model
+init =
+    { username = "", password = "", secret = "", register = False, message = Nothing, loading = False }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -85,15 +84,15 @@ update msg model =
         Send ->
             ( { model | loading = True }
             , if model.register then
-                Cmd.map Registered (Api.Auth.register model.url model.username model.password model.secret)
+                Cmd.map Registered (Api.Auth.register model.username model.password model.secret)
 
               else
-                Cmd.map LoggedIn (Api.Auth.logIn model.url model.username model.password)
+                Cmd.map LoggedIn (Api.Auth.logIn model.username model.password)
             )
 
         LogOut ->
             ( { model | loading = True, message = Nothing }
-            , Cmd.map LoggedOut (Api.Auth.logOut model.url)
+            , Cmd.map LoggedOut Api.Auth.logOut
             )
 
         Toggle ->

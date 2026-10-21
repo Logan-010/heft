@@ -12,10 +12,10 @@ type AuthMsg
     | Register (Result Http.Error String)
 
 
-isLoggedIn : String -> Cmd AuthMsg
-isLoggedIn url =
+isLoggedIn : Cmd AuthMsg
+isLoggedIn =
     Http.get
-        { url = Url.Builder.crossOrigin url [ "api", "auth", "validate" ] []
+        { url = Url.Builder.absolute [ "api", "auth", "validate" ] []
         , expect = Http.expectString IsLoggedIn
         }
 
@@ -28,19 +28,19 @@ encodeCredentials username password =
         ]
 
 
-logIn : String -> String -> String -> Cmd AuthMsg
-logIn url username password =
+logIn : String -> String -> Cmd AuthMsg
+logIn username password =
     Http.post
-        { url = Url.Builder.crossOrigin url [ "api", "auth", "login" ] []
+        { url = Url.Builder.absolute [ "api", "auth", "login" ] []
         , body = Http.jsonBody (encodeCredentials username password)
         , expect = Http.expectString LogIn
         }
 
 
-logOut : String -> Cmd AuthMsg
-logOut url =
+logOut : Cmd AuthMsg
+logOut =
     Http.post
-        { url = Url.Builder.crossOrigin url [ "api", "auth", "logout" ] []
+        { url = Url.Builder.absolute [ "api", "auth", "logout" ] []
         , body = Http.emptyBody
         , expect = Http.expectString LogOut
         }
@@ -55,10 +55,10 @@ encodeRegister username password secret =
         ]
 
 
-register : String -> String -> String -> String -> Cmd AuthMsg
-register url username password secret =
+register : String -> String -> String -> Cmd AuthMsg
+register username password secret =
     Http.post
-        { url = Url.Builder.crossOrigin url [ "api", "auth", "register" ] []
+        { url = Url.Builder.absolute [ "api", "auth", "register" ] []
         , body = Http.jsonBody (encodeRegister username password secret)
         , expect = Http.expectString Register
         }

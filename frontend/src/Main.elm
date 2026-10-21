@@ -1,9 +1,8 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Api.Auth
 import Api.Util
 import Browser
-import Browser.Navigation as Nav
 import Html
 import Html.Attributes exposing (attribute, class)
 import Http
@@ -11,13 +10,10 @@ import Page.Home
 import Page.Login
 import Page.NotFound
 import Style
-import Url exposing (Url)
-import Url.Parser as Parser
 
 
 type alias Model =
-    { key : Nav.Key
-    , route : Route
+    { route : Route
     , loggedIn : Maybe Bool
     , error : Maybe String
     , loginModel : Page.Login.Model
@@ -31,64 +27,56 @@ type Route
     | NotFound
 
 
-routeFromUrl : Url -> Route
-routeFromUrl url =
-    Parser.parse
-        (Parser.oneOf
-            [ Parser.map Home Parser.top
-            , Parser.map Login (Parser.s "login")
-            ]
-        )
-        url
-        |> Maybe.withDefault NotFound
+port replacePath : String -> Cmd msg
+
+
+port pathChanged : (String -> msg) -> Sub msg
+
+
+routeFromPath : String -> Route
+routeFromPath path =
+    case List.filter (not << String.isEmpty) (String.split "/" path) of
+        [] ->
+            Home
+
+        [ "login" ] ->
+            Login
+
+        _ ->
+            NotFound
 
 
 type Msg
-    = UrlRequested Browser.UrlRequest
-    | UrlChanged Url
+    = PathChanged String
     | AuthMsg Api.Auth.AuthMsg
     | HomeMsg Page.Home.Msg
     | LoginMsg Page.Login.Msg
 
 
-main : Program () Model Msg
+main : Program String Model Msg
 main =
-    Browser.application
+    Browser.document
         { init = init
         , update = update
         , view = view
-        , subscriptions = \_ -> Sub.none
-        , onUrlRequest = UrlRequested
-        , onUrlChange = UrlChanged
+        , subscriptions = \_ -> pathChanged PathChanged
         }
 
 
-init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url key =
-    let
-        u =
-            Url.toString { url | path = "", query = Nothing, fragment = Nothing }
-    in
-    ( { key = key, route = routeFromUrl url, loggedIn = Nothing, error = Nothing, loginModel = Page.Login.init u, homeModel = Page.Home.init u }
-    , Cmd.map AuthMsg (Api.Auth.isLoggedIn u)
+init : String -> ( Model, Cmd Msg )
+init path =
+    ( { route = routeFromPath path, loggedIn = Nothing, error = Nothing, loginModel = Page.Login.init, homeModel = Page.Home.init }
+    , Cmd.map AuthMsg Api.Auth.isLoggedIn
     )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UrlRequested request ->
-            case request of
-                Browser.Internal url ->
-                    ( model, Nav.pushUrl model.key (Url.toString url) )
-
-                Browser.External url ->
-                    ( model, Nav.load url )
-
-        UrlChanged url ->
+        PathChanged path ->
             let
                 updatedModel =
-                    { model | route = routeFromUrl url }
+                    { model | route = routeFromPath path }
 
                 ( loadedModel, homeCmd ) =
                     loadHome updatedModel
@@ -136,7 +124,7 @@ update msg model =
             , Cmd.batch
                 [ Cmd.map LoginMsg loginCmd
                 , if loggedIn == Just True && model.loggedIn /= Just True then
-                    Nav.replaceUrl model.key "/"
+                    replacePath "/"
 
                   else
                     Cmd.none
@@ -167,7 +155,7 @@ loadHome model =
 redirectIfLoggedOut : Model -> Cmd Msg
 redirectIfLoggedOut model =
     if model.loggedIn == Just False && model.route /= Login then
-        Nav.replaceUrl model.key "/login"
+        replacePath "/login"
 
     else
         Cmd.none
