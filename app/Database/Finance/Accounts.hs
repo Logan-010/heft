@@ -11,8 +11,8 @@ import Database.SQLite.Simple
     withTransaction,
   )
 
-open :: Connection -> String -> String -> Int -> IO (Maybe String)
-open db username accountName initialBalance = withImmediateTransaction db $ do
+open :: Connection -> String -> String -> String -> Int -> IO (Maybe String)
+open db username accountName accountUnit initialBalance = withImmediateTransaction db $ do
   users <- query db "SELECT id FROM users WHERE username = ?" (Only username) :: IO [Only Int]
   case users of
     [Only userId] -> do
@@ -23,8 +23,8 @@ open db username accountName initialBalance = withImmediateTransaction db $ do
         then do
           execute
             db
-            "INSERT INTO accounts (user_id, name, unit, initial) VALUES (?, ?, '', ?)"
-            (userId, accountName, initialBalance)
+            "INSERT INTO accounts (user_id, name, unit, initial) VALUES (?, ?, ?, ?)"
+            (userId, accountName, accountUnit, initialBalance)
           pure Nothing
         else pure $ Just "Error: Account already exists"
     _ -> pure $ Just "Error: User not found"
@@ -49,7 +49,7 @@ close db username accountName = withImmediateTransaction db $ do
     [] -> pure $ Just "Error: Account not found"
     _ -> pure $ Just "Error: Account name is ambiguous"
 
-list :: Connection -> String -> IO (Either String [(String, Int)])
+list :: Connection -> String -> IO (Either String [(String, String, Int)])
 list db username = withTransaction db $ do
   users <- query db "SELECT id FROM users WHERE username = ?" (Only username) :: IO [Only Int]
   case users of
@@ -57,7 +57,7 @@ list db username = withTransaction db $ do
       Right
         <$> query
           db
-          "SELECT accounts.name, accounts.initial + COALESCE(SUM(transactions.amount), 0) \
+          "SELECT accounts.name, accounts.unit, accounts.initial + COALESCE(SUM(transactions.amount), 0) \
           \FROM accounts LEFT JOIN transactions ON transactions.account_id = accounts.id \
           \WHERE accounts.user_id = ? GROUP BY accounts.id ORDER BY accounts.name, accounts.id"
           (Only userId)

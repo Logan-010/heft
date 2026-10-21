@@ -22,6 +22,7 @@ import Network.Wai (Application, responseLBS, strictRequestBody)
 
 data OpenRequest = OpenRequest
   { name :: Text,
+    unit :: Text,
     balance :: Int
   }
   deriving (Show, Generic)
@@ -37,7 +38,7 @@ open db logger req respond =
           status400
           [("Content-Type", "text/plain")]
           "Bad request"
-    Right (OpenRequest n a) ->
+    Right (OpenRequest n un a) ->
       Http.Auth.authenticate db req >>= \case
         Left (status, err) ->
           respond
@@ -46,7 +47,7 @@ open db logger req respond =
               [("Content-Type", "text/plain")]
             $ LBS.pack err
         Right u ->
-          try (Database.Finance.Accounts.open db u (T.unpack n) a) >>= \case
+          try (Database.Finance.Accounts.open db u (T.unpack n) (T.unpack un) a) >>= \case
             Left (err :: IOException) ->
               Logger.logMsg
                 logger
@@ -117,6 +118,7 @@ close db logger req respond =
 
 data ListResponse = ListResponse
   { name :: Text,
+    unit :: Text,
     balance :: Int
   }
   deriving (Show, Generic)
@@ -154,4 +156,4 @@ list db logger req respond =
               status200
               [("Content-Type", "application/json")]
             $ encode
-            $ map (\(n, b) -> ListResponse (T.pack n) b) a
+            $ map (\(n, un, b) -> ListResponse (T.pack n) (T.pack un) b) a
