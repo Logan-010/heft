@@ -61,8 +61,12 @@ main =
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
-    ( { key = key, route = routeFromUrl url, loggedIn = Nothing, error = Nothing, loginModel = Page.Login.init () }
-    , Cmd.map AuthMsg (Api.Auth.isLoggedIn (Url.toString { url | path = "", query = Nothing, fragment = Nothing }))
+    let
+        u =
+            Url.toString { url | path = "", query = Nothing, fragment = Nothing }
+    in
+    ( { key = key, route = routeFromUrl url, loggedIn = Nothing, error = Nothing, loginModel = Page.Login.init u }
+    , Cmd.map AuthMsg (Api.Auth.isLoggedIn u)
     )
 
 
