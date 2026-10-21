@@ -1,3 +1,5 @@
+![./heft.jpg](heft preview)
+
 # heft
 A pure app for managing your personal financial assets.
 
