@@ -1,14 +1,14 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Database.Auth (validateSession, createSession, getPasswordHash, register) where
+module Database.Auth (validateSession, createSession, deleteSession, getPasswordHash, register) where
 
 import Crypto.Random (getRandomBytes)
 import qualified Data.ByteString as BS
 import Data.Maybe (listToMaybe)
 import Data.Password.Argon2 (Argon2, PasswordHash (..), hashPassword, mkPassword)
 import qualified Data.Text as T
-import Database.SQLite.Simple (Connection, Only (..), query)
+import Database.SQLite.Simple (Connection, Only (..), execute, query)
 import Numeric (showHex)
 
 validateSession :: Connection -> String -> IO (Maybe String)
@@ -34,6 +34,10 @@ createSession db username =
           >>= \case
             [Only token] -> pure token
             _ -> ioError $ userError "Cannot create a session for a nonexistent user"
+
+deleteSession :: Connection -> String -> IO ()
+deleteSession db session =
+  execute db "DELETE FROM sessions WHERE id = ?" (Only session)
 
 getPasswordHash :: Connection -> String -> IO (Maybe (PasswordHash Argon2))
 getPasswordHash db username =

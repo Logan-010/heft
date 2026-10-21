@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Http.Auth (authenticate, register, login, validate) where
+module Http.Auth (authenticate, register, login, logout, validate) where
 
 import Control.Exception (IOException, try)
 import Data.Aeson (FromJSON, eitherDecode)
@@ -140,16 +140,46 @@ register db appSecret logger req respond =
               [("Content-Type", "text/plain")]
               "Wrong secret"
 
+logout :: Connection -> Logger -> Application
+logout db logger req respond =
+  try (maybe (pure ()) (Database.Auth.deleteSession db . BS.unpack) (sessionCookie req)) >>= \case
+    Left (err :: IOException) ->
+      Logger.logMsg logger Logger.Warn (T.pack $ show err)
+        >> respond (responseLBS status500 [("Content-Type", "text/plain")] "Internal Server Error")
+    Right () ->
+      respond $
+        responseLBS
+          status200
+          [ ("Content-Type", "text/plain"),
+            ( "Set-Cookie",
+              LBS.toStrict . toLazyByteString . renderSetCookie $
+                defaultSetCookie
+                  { setCookieName = sessionCookieName,
+                    setCookieValue = "",
+                    setCookiePath = Just "/",
+                    setCookieMaxAge = Just 0,
+                    setCookieHttpOnly = True,
+                    setCookieSecure = isSecure req,
+                    setCookieSameSite = Just sameSiteLax
+                  }
+            )
+          ]
+          "Logged out"
+
+sessionCookie :: Request -> Maybe BS.ByteString
+sessionCookie req =
+  lookup sessionCookieName $
+    concatMap (parseCookies . snd) $
+      filter ((== "Cookie") . fst) (requestHeaders req)
+
 authenticate :: Connection -> Request -> IO (Either (Status, String) String)
 authenticate db req =
-  case lookup sessionCookieName cookies of
+  case sessionCookie req of
     Just session ->
       Database.Auth.validateSession db (BS.unpack session) >>= \case
         Just user -> pure $ Right user
         Nothing -> pure $ Left (status401, "Invalid session")
     Nothing -> pure $ Left (status401, "Missing session cookie")
-  where
-    cookies = concatMap (parseCookies . snd) $ filter ((== "Cookie") . fst) (requestHeaders req)
 
 validate :: Connection -> Logger -> Application
 validate db logger req respond =

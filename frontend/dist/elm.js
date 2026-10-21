@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.W.G === region.aa.G)
+	if (region.X.G === region.ab.G)
 	{
-		return 'on line ' + region.W.G;
+		return 'on line ' + region.X.G;
 	}
-	return 'on lines ' + region.W.G + ' through ' + region.aa.G;
+	return 'on lines ' + region.X.G + ' through ' + region.ab.G;
 }
 
 
@@ -2728,8 +2728,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		k: func(record.k),
-		X: record.X,
-		U: record.U
+		Y: record.Y,
+		V: record.V
 	}
 });
 
@@ -2998,10 +2998,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.k;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.X;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.Y;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.U) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.V) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3991,7 +3991,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 		impl.aZ,
 		impl.aX,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.V && impl.V(sendToApp)
+			var divertHrefToApp = impl.W && impl.W(sendToApp)
 			var view = impl.a_;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
@@ -4000,12 +4000,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.R);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.S);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.au) && (_VirtualDom_doc.title = title = doc.au);
+				(title !== doc.Q) && (_VirtualDom_doc.title = title = doc.Q);
 			});
 		}
 	);
@@ -4066,7 +4066,7 @@ function _Browser_application(impl)
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		V: function(sendToApp)
+		W: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4082,9 +4082,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.al === next.al
-							&& curr.ae === next.ae
-							&& curr.ai.a === next.ai.a
+							&& curr.am === next.am
+							&& curr.af === next.af
+							&& curr.aj.a === next.aj.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4255,12 +4255,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		aq: _Browser_getScene(),
+		ar: _Browser_getScene(),
 		aw: {
 			ay: _Browser_window.pageXOffset,
 			az: _Browser_window.pageYOffset,
 			ax: _Browser_doc.documentElement.clientWidth,
-			ad: _Browser_doc.documentElement.clientHeight
+			ae: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4271,7 +4271,7 @@ function _Browser_getScene()
 	var elem = _Browser_doc.documentElement;
 	return {
 		ax: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		ad: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		ae: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4294,15 +4294,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			aq: {
+			ar: {
 				ax: node.scrollWidth,
-				ad: node.scrollHeight
+				ae: node.scrollHeight
 			},
 			aw: {
 				ay: node.scrollLeft,
 				az: node.scrollTop,
 				ax: node.clientWidth,
-				ad: node.clientHeight
+				ae: node.clientHeight
 			}
 		};
 	});
@@ -4332,18 +4332,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			aq: _Browser_getScene(),
+			ar: _Browser_getScene(),
 			aw: {
 				ay: x,
 				az: y,
 				ax: _Browser_doc.documentElement.clientWidth,
-				ad: _Browser_doc.documentElement.clientHeight
+				ae: _Browser_doc.documentElement.clientHeight
 			},
 			aF: {
 				ay: x + rect.left,
 				az: y + rect.top,
 				ax: rect.width,
-				ad: rect.height
+				ae: rect.height
 			}
 		};
 	});
@@ -4398,15 +4398,15 @@ var _Http_toTask = F3(function(router, toTask, request)
 		$elm$core$Maybe$isJust(request.av) && _Http_track(router, xhr, request.av.a);
 
 		try {
-			xhr.open(request.aL, request.Q, true);
+			xhr.open(request.aL, request.R, true);
 		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.Q));
+			return done($elm$http$Http$BadUrl_(request.R));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.R.a && xhr.setRequestHeader('Content-Type', request.R.a);
-		xhr.send(request.R.b);
+		request.S.a && xhr.setRequestHeader('Content-Type', request.S.a);
+		xhr.send(request.S.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -4417,7 +4417,7 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.ac; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.ad; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
@@ -4444,10 +4444,10 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		Q: xhr.responseURL,
+		R: xhr.responseURL,
 		aV: xhr.status,
 		aW: xhr.statusText,
-		ac: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		ad: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -4543,14 +4543,14 @@ function _Http_track(router, xhr, tracker)
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
 			aU: event.loaded,
-			ar: event.total
+			as: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
 			aS: event.loaded,
-			ar: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
+			as: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
 }
@@ -5080,7 +5080,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {aH: fragment, ae: host, aQ: path, ai: port_, al: protocol, aR: query};
+		return {aH: fragment, af: host, aQ: path, aj: port_, am: protocol, aR: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5363,10 +5363,10 @@ var $author$project$Main$AuthMsg = function (a) {
 	return {$: 2, a: a};
 };
 var $author$project$Page$Home$init = function (u) {
-	return {Q: u};
+	return {R: u};
 };
 var $author$project$Page$Login$init = function (u) {
-	return {f: false, k: $elm$core$Maybe$Nothing, v: '', x: false, C: '', Q: u, y: ''};
+	return {f: false, k: $elm$core$Maybe$Nothing, v: '', x: false, C: '', R: u, y: ''};
 };
 var $author$project$Api$Auth$IsLoggedIn = function (a) {
 	return {$: 0, a: a};
@@ -6002,7 +6002,7 @@ var $elm$http$Http$Request = function (a) {
 };
 var $elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {an: reqs, as: subs};
+		return {ao: reqs, at: subs};
 	});
 var $elm$http$Http$init = $elm$core$Task$succeed(
 	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
@@ -6076,7 +6076,7 @@ var $elm$http$Http$onEffects = F4(
 				return $elm$core$Task$succeed(
 					A2($elm$http$Http$State, reqs, subs));
 			},
-			A3($elm$http$Http$updateReqs, router, cmds, state.an));
+			A3($elm$http$Http$updateReqs, router, cmds, state.ao));
 	});
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -6119,7 +6119,7 @@ var $elm$http$Http$onSelfMsg = F3(
 				A2(
 					$elm$core$List$filterMap,
 					A3($elm$http$Http$maybeSend, router, tracker, progress),
-					state.as)));
+					state.at)));
 	});
 var $elm$http$Http$Cancel = function (a) {
 	return {$: 0, a: a};
@@ -6134,13 +6134,13 @@ var $elm$http$Http$cmdMap = F2(
 			return $elm$http$Http$Request(
 				{
 					aB: r.aB,
-					R: r.R,
+					S: r.S,
 					N: A2(_Http_mapExpect, func, r.N),
-					ac: r.ac,
+					ad: r.ad,
 					aL: r.aL,
 					aY: r.aY,
 					av: r.av,
-					Q: r.Q
+					R: r.R
 				});
 		}
 	});
@@ -6163,17 +6163,17 @@ var $elm$http$Http$subscription = _Platform_leaf('Http');
 var $elm$http$Http$request = function (r) {
 	return $elm$http$Http$command(
 		$elm$http$Http$Request(
-			{aB: false, R: r.R, N: r.N, ac: r.ac, aL: r.aL, aY: r.aY, av: r.av, Q: r.Q}));
+			{aB: false, S: r.S, N: r.N, ad: r.ad, aL: r.aL, aY: r.aY, av: r.av, R: r.R}));
 };
 var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
-		{R: $elm$http$Http$emptyBody, N: r.N, ac: _List_Nil, aL: 'GET', aY: $elm$core$Maybe$Nothing, av: $elm$core$Maybe$Nothing, Q: r.Q});
+		{S: $elm$http$Http$emptyBody, N: r.N, ad: _List_Nil, aL: 'GET', aY: $elm$core$Maybe$Nothing, av: $elm$core$Maybe$Nothing, R: r.R});
 };
 var $author$project$Api$Auth$isLoggedIn = function (url) {
 	return $elm$http$Http$get(
 		{
 			N: $elm$http$Http$expectString($author$project$Api$Auth$IsLoggedIn),
-			Q: A3(
+			R: A3(
 				$elm$url$Url$Builder$crossOrigin,
 				url,
 				_List_fromArray(
@@ -6440,7 +6440,7 @@ var $elm$url$Url$addPrefixed = F3(
 	});
 var $elm$url$Url$toString = function (url) {
 	var http = function () {
-		var _v0 = url.al;
+		var _v0 = url.am;
 		if (!_v0) {
 			return 'http://';
 		} else {
@@ -6458,8 +6458,8 @@ var $elm$url$Url$toString = function (url) {
 			_Utils_ap(
 				A2(
 					$elm$url$Url$addPort,
-					url.ai,
-					_Utils_ap(http, url.ae)),
+					url.aj,
+					_Utils_ap(http, url.af)),
 				url.aQ)));
 };
 var $author$project$Main$init = F3(
@@ -6569,16 +6569,16 @@ var $elm$http$Http$jsonBody = function (value) {
 };
 var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
-		{R: r.R, N: r.N, ac: _List_Nil, aL: 'POST', aY: $elm$core$Maybe$Nothing, av: $elm$core$Maybe$Nothing, Q: r.Q});
+		{S: r.S, N: r.N, ad: _List_Nil, aL: 'POST', aY: $elm$core$Maybe$Nothing, av: $elm$core$Maybe$Nothing, R: r.R});
 };
 var $author$project$Api$Auth$logIn = F3(
 	function (url, username, password) {
 		return $elm$http$Http$post(
 			{
-				R: $elm$http$Http$jsonBody(
+				S: $elm$http$Http$jsonBody(
 					A2($author$project$Api$Auth$encodeCredentials, username, password)),
 				N: $elm$http$Http$expectString($author$project$Api$Auth$LogIn),
-				Q: A3(
+				R: A3(
 					$elm$url$Url$Builder$crossOrigin,
 					url,
 					_List_fromArray(
@@ -6592,9 +6592,9 @@ var $author$project$Api$Auth$LogOut = function (a) {
 var $author$project$Api$Auth$logOut = function (url) {
 	return $elm$http$Http$post(
 		{
-			R: $elm$http$Http$emptyBody,
+			S: $elm$http$Http$emptyBody,
 			N: $elm$http$Http$expectString($author$project$Api$Auth$LogOut),
-			Q: A3(
+			R: A3(
 				$elm$url$Url$Builder$crossOrigin,
 				url,
 				_List_fromArray(
@@ -6626,10 +6626,10 @@ var $author$project$Api$Auth$register = F4(
 	function (url, username, password, secret) {
 		return $elm$http$Http$post(
 			{
-				R: $elm$http$Http$jsonBody(
+				S: $elm$http$Http$jsonBody(
 					A3($author$project$Api$Auth$encodeRegister, username, password, secret)),
 				N: $elm$http$Http$expectString($author$project$Api$Auth$Register),
-				Q: A3(
+				R: A3(
 					$elm$url$Url$Builder$crossOrigin,
 					url,
 					_List_fromArray(
@@ -6756,10 +6756,10 @@ var $author$project$Page$Login$update = F2(
 					model.x ? A2(
 						$elm$core$Platform$Cmd$map,
 						$author$project$Page$Login$Registered,
-						A4($author$project$Api$Auth$register, model.Q, model.y, model.v, model.C)) : A2(
+						A4($author$project$Api$Auth$register, model.R, model.y, model.v, model.C)) : A2(
 						$elm$core$Platform$Cmd$map,
 						$author$project$Page$Login$LoggedIn,
-						A3($author$project$Api$Auth$logIn, model.Q, model.y, model.v)));
+						A3($author$project$Api$Auth$logIn, model.R, model.y, model.v)));
 			case 7:
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -6768,7 +6768,7 @@ var $author$project$Page$Login$update = F2(
 					A2(
 						$elm$core$Platform$Cmd$map,
 						$author$project$Page$Login$LoggedOut,
-						$author$project$Api$Auth$logOut(model.Q)));
+						$author$project$Api$Auth$logOut(model.R)));
 			default:
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -6894,38 +6894,66 @@ var $author$project$Main$update = F2(
 					A2($elm$core$Platform$Cmd$map, $author$project$Main$HomeMsg, homeCmd));
 		}
 	});
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$main_ = _VirtualDom_node('main');
+var $author$project$Style$message = 'break-words border-l-2 border-accent pl-3 text-muted';
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
-var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $author$project$Style$heading = 'border-l-2 border-accent pl-3 font-medium tracking-tight';
 var $author$project$Page$Home$view = {
-	R: _List_fromArray(
+	S: _List_fromArray(
 		[
 			A2(
 			$elm$html$Html$div,
-			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('space-y-4')
+				]),
 			_List_fromArray(
 				[
 					A2(
 					$elm$html$Html$h1,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class($author$project$Style$heading + ' text-xl sm:text-2xl')
+						]),
 					_List_fromArray(
 						[
 							$elm$html$Html$text('Heft')
 						])),
 					A2(
 					$elm$html$Html$p,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-muted')
+						]),
 					_List_fromArray(
 						[
 							$elm$html$Html$text('Personal financial tracking')
 						]))
 				]))
 		]),
-	au: 'Heft'
+	Q: 'Heft'
 };
 var $author$project$Page$Login$LogOut = {$: 7};
 var $author$project$Page$Login$Send = {$: 6};
@@ -6940,6 +6968,10 @@ var $author$project$Page$Login$UpdateUsername = function (a) {
 	return {$: 3, a: a};
 };
 var $elm$html$Html$button = _VirtualDom_node('button');
+var $author$project$Style$button = 'min-h-11 cursor-pointer rounded-none border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-40 motion-safe:transition-colors';
+var $author$project$Style$buttonPrimary = $author$project$Style$button + ' border-accent bg-accent text-on-accent enabled:hover:bg-transparent enabled:hover:text-accent';
+var $author$project$Style$buttonQuiet = $author$project$Style$button + ' border-transparent text-muted enabled:hover:border-line enabled:hover:text-ink';
+var $author$project$Style$buttonSecondary = $author$project$Style$button + ' border-line text-ink enabled:hover:border-accent enabled:hover:text-accent';
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
@@ -6950,6 +6982,7 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 	});
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$html$Html$input = _VirtualDom_node('input');
+var $author$project$Style$input = 'block min-h-11 w-full min-w-0 rounded-none border border-line bg-canvas px-3 py-3 text-base text-ink caret-accent placeholder:text-muted focus:border-accent focus:outline-2 focus:outline-offset-2 focus:outline-accent sm:text-sm';
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
 };
@@ -7000,32 +7033,43 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Page$Login$view = function (model) {
 	return {
-		R: _List_fromArray(
+		S: _List_fromArray(
 			[
 				function () {
 				var _v0 = model.k;
 				if (!_v0.$) {
 					var e = _v0.a;
-					return $elm$html$Html$text(e);
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class($author$project$Style$message + ' mb-6'),
+								A2($elm$html$Html$Attributes$attribute, 'role', 'status'),
+								A2($elm$html$Html$Attributes$attribute, 'aria-live', 'polite')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(e)
+							]));
 				} else {
 					return $elm$html$Html$text('');
 				}
 			}(),
 				A2(
 				$elm$html$Html$div,
-				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('space-y-3'),
+						A2(
+						$elm$html$Html$Attributes$attribute,
+						'aria-busy',
+						model.f ? 'true' : 'false')
+					]),
 				_List_fromArray(
 					[
 						A2(
@@ -7033,6 +7077,8 @@ var $author$project$Page$Login$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$Attributes$type_('text'),
+								$elm$html$Html$Attributes$class($author$project$Style$input),
+								A2($elm$html$Html$Attributes$attribute, 'aria-label', 'Username'),
 								$elm$html$Html$Attributes$placeholder('Enter username...'),
 								$elm$html$Html$Events$onInput($author$project$Page$Login$UpdateUsername),
 								$elm$html$Html$Attributes$value(model.y)
@@ -7043,6 +7089,8 @@ var $author$project$Page$Login$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$Attributes$type_('password'),
+								$elm$html$Html$Attributes$class($author$project$Style$input),
+								A2($elm$html$Html$Attributes$attribute, 'aria-label', 'Password'),
 								$elm$html$Html$Attributes$placeholder('Enter password...'),
 								$elm$html$Html$Events$onInput($author$project$Page$Login$UpdatePassword),
 								$elm$html$Html$Attributes$value(model.v)
@@ -7053,48 +7101,62 @@ var $author$project$Page$Login$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$Attributes$type_('text'),
+								$elm$html$Html$Attributes$class($author$project$Style$input),
+								A2($elm$html$Html$Attributes$attribute, 'aria-label', 'Secret'),
 								$elm$html$Html$Attributes$placeholder('Enter secret...'),
 								$elm$html$Html$Events$onInput($author$project$Page$Login$UpdateSecret),
 								$elm$html$Html$Attributes$value(model.C)
 							]),
 						_List_Nil) : $elm$html$Html$text(''),
 						A2(
-						$elm$html$Html$button,
+						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Events$onClick($author$project$Page$Login$Send),
-								$elm$html$Html$Attributes$disabled(model.f)
+								$elm$html$Html$Attributes$class('grid grid-cols-1 gap-3 border-t border-line pt-5 sm:grid-cols-3')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Send')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Page$Login$Toggle),
-								$elm$html$Html$Attributes$disabled(model.f)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								model.x ? 'Login' : 'Register')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Page$Login$LogOut),
-								$elm$html$Html$Attributes$disabled(model.f)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Log out')
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Events$onClick($author$project$Page$Login$Send),
+										$elm$html$Html$Attributes$disabled(model.f),
+										$elm$html$Html$Attributes$class($author$project$Style$buttonPrimary)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Send')
+									])),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Events$onClick($author$project$Page$Login$Toggle),
+										$elm$html$Html$Attributes$disabled(model.f),
+										$elm$html$Html$Attributes$class($author$project$Style$buttonSecondary)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(
+										model.x ? 'Login' : 'Register')
+									])),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Events$onClick($author$project$Page$Login$LogOut),
+										$elm$html$Html$Attributes$disabled(model.f),
+										$elm$html$Html$Attributes$class($author$project$Style$buttonQuiet)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Log out')
+									]))
 							]))
 					]))
 			]),
-		au: 'Login - Heft'
+		Q: 'Login - Heft'
 	};
 };
 var $elm$html$Html$a = _VirtualDom_node('a');
@@ -7105,16 +7167,22 @@ var $elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var $author$project$Page$NotFound$view = {
-	R: _List_fromArray(
+	S: _List_fromArray(
 		[
 			A2(
 			$elm$html$Html$div,
-			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('space-y-6')
+				]),
 			_List_fromArray(
 				[
 					A2(
 					$elm$html$Html$h1,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class($author$project$Style$heading + ' text-lg sm:text-xl')
+						]),
 					_List_fromArray(
 						[
 							$elm$html$Html$text('404 - Page not found')
@@ -7123,7 +7191,8 @@ var $author$project$Page$NotFound$view = {
 					$elm$html$Html$a,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$href('/')
+							$elm$html$Html$Attributes$href('/'),
+							$elm$html$Html$Attributes$class('inline-block py-2 text-accent underline decoration-line underline-offset-4 hover:decoration-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent')
 						]),
 					_List_fromArray(
 						[
@@ -7131,21 +7200,28 @@ var $author$project$Page$NotFound$view = {
 						]))
 				]))
 		]),
-	au: '404 - Heft'
+	Q: '404 - Heft'
 };
 var $author$project$Main$viewRoute = function (model) {
 	var _v0 = model.I;
 	switch (_v0) {
 		case 0:
-			return $author$project$Page$Home$view;
+			var document = $author$project$Page$Home$view;
+			return {
+				S: A2(
+					$elm$core$List$map,
+					$elm$html$Html$map($author$project$Main$HomeMsg),
+					document.S),
+				Q: document.Q
+			};
 		case 1:
 			var document = $author$project$Page$Login$view(model.H);
 			return {
-				R: A2(
+				S: A2(
 					$elm$core$List$map,
 					$elm$html$Html$map($author$project$Main$LoginMsg),
-					document.R),
-				au: document.au
+					document.S),
+				Q: document.Q
 			};
 		default:
 			return $author$project$Page$NotFound$view;
@@ -7153,28 +7229,52 @@ var $author$project$Main$viewRoute = function (model) {
 };
 var $author$project$Main$view = function (model) {
 	var document = $author$project$Main$viewRoute(model);
-	var _v0 = model.B;
-	if (!_v0.$) {
-		var error = _v0.a;
-		return _Utils_update(
-			document,
-			{
-				R: _Utils_ap(
-					document.R,
+	return _Utils_update(
+		document,
+		{
+			S: _List_fromArray(
+				[
+					A2(
+					$elm$html$Html$main_,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('grid min-h-svh place-items-center px-4 py-8 sm:px-8 sm:py-16')
+						]),
 					_List_fromArray(
 						[
 							A2(
-							$elm$html$Html$p,
-							_List_Nil,
+							$elm$html$Html$div,
 							_List_fromArray(
 								[
-									$elm$html$Html$text(error)
-								]))
+									$elm$html$Html$Attributes$class('w-full max-w-lg min-w-0 border border-line bg-surface p-6 sm:p-10')
+								]),
+							_Utils_ap(
+								document.S,
+								function () {
+									var _v0 = model.B;
+									if (!_v0.$) {
+										var error = _v0.a;
+										return _List_fromArray(
+											[
+												A2(
+												$elm$html$Html$p,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class($author$project$Style$message + ' mt-6'),
+														A2($elm$html$Html$Attributes$attribute, 'role', 'alert')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text(error)
+													]))
+											]);
+									} else {
+										return _List_Nil;
+									}
+								}()))
 						]))
-			});
-	} else {
-		return document;
-	}
+				])
+		});
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
 	{

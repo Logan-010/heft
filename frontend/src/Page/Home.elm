@@ -2,6 +2,8 @@ module Page.Home exposing (Model, Msg, init, update, view)
 
 import Browser
 import Html exposing (div, h1, p, text)
+import Html.Attributes exposing (class)
+import Style
 
 
 type Msg
@@ -27,9 +29,9 @@ view : Browser.Document msg
 view =
     { title = "Heft"
     , body =
-        [ div []
-            [ h1 [] [ text "Heft" ]
-            , p [] [ text "Personal financial tracking" ]
+        [ div [ class "space-y-4" ]
+            [ h1 [ class (Style.heading ++ " text-xl sm:text-2xl") ] [ text "Heft" ]
+            , p [ class "text-muted" ] [ text "Personal financial tracking" ]
             ]
         ]
     }

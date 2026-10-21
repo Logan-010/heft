@@ -4,8 +4,9 @@ import Api.Auth
 import Api.Util
 import Browser
 import Html exposing (button, div, input, text)
-import Html.Attributes exposing (disabled, placeholder, type_, value)
+import Html.Attributes exposing (attribute, class, disabled, placeholder, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Style
 
 
 type alias Model =
@@ -105,13 +106,24 @@ view model =
     , body =
         [ case model.message of
             Just e ->
-                text e
+                div [ class (Style.message ++ " mb-6"), attribute "role" "status", attribute "aria-live" "polite" ] [ text e ]
 
             Nothing ->
                 text ""
-        , div []
+        , div
+            [ class "space-y-3"
+            , attribute "aria-busy"
+                (if model.loading then
+                    "true"
+
+                 else
+                    "false"
+                )
+            ]
             [ input
                 [ type_ "text"
+                , class Style.input
+                , attribute "aria-label" "Username"
                 , placeholder "Enter username..."
                 , onInput UpdateUsername
                 , value model.username
@@ -119,32 +131,36 @@ view model =
                 []
             , input
                 [ type_ "password"
+                , class Style.input
+                , attribute "aria-label" "Password"
                 , placeholder "Enter password..."
                 , onInput UpdatePassword
                 , value model.password
                 ]
                 []
             , if model.register then
-                input [ type_ "text", placeholder "Enter secret...", onInput UpdateSecret, value model.secret ] []
+                input [ type_ "text", class Style.input, attribute "aria-label" "Secret", placeholder "Enter secret...", onInput UpdateSecret, value model.secret ] []
 
               else
                 text ""
-            , button
-                [ onClick Send, disabled model.loading ]
-                [ text "Send" ]
-            , button
-                [ onClick Toggle, disabled model.loading ]
-                [ text
-                    (if model.register then
-                        "Login"
+            , div [ class "grid grid-cols-1 gap-3 border-t border-line pt-5 sm:grid-cols-3" ]
+                [ button
+                    [ onClick Send, disabled model.loading, class Style.buttonPrimary ]
+                    [ text "Send" ]
+                , button
+                    [ onClick Toggle, disabled model.loading, class Style.buttonSecondary ]
+                    [ text
+                        (if model.register then
+                            "Login"
 
-                     else
-                        "Register"
-                    )
+                         else
+                            "Register"
+                        )
+                    ]
+                , button
+                    [ onClick LogOut, disabled model.loading, class Style.buttonQuiet ]
+                    [ text "Log out" ]
                 ]
-            , button
-                [ onClick LogOut, disabled model.loading ]
-                [ text "Log out" ]
             ]
         ]
     }

@@ -1,3 +1,46 @@
 @import "tailwindcss";
 @source "./**/*.elm";
 @source "../index.html";
+
+@theme inline {
+  --color-canvas: var(--terminal-canvas);
+  --color-surface: var(--terminal-surface);
+  --color-ink: var(--terminal-ink);
+  --color-muted: var(--terminal-muted);
+  --color-line: var(--terminal-line);
+  --color-accent: var(--terminal-accent);
+  --color-on-accent: var(--terminal-on-accent);
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+    --terminal-canvas: #f4f4f0;
+    --terminal-surface: #fafaf7;
+    --terminal-ink: #252923;
+    --terminal-muted: #656b60;
+    --terminal-line: #d4d8ce;
+    --terminal-accent: #3e602e;
+    --terminal-on-accent: #fafaf7;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --terminal-canvas: #111310;
+      --terminal-surface: #171a15;
+      --terminal-ink: #e1e6da;
+      --terminal-muted: #9ba491;
+      --terminal-line: #353d2f;
+      --terminal-accent: #b4ce91;
+      --terminal-on-accent: #171a15;
+    }
+  }
+
+  body {
+    @apply m-0 bg-canvas font-mono text-sm leading-relaxed text-ink antialiased;
+  }
+
+  ::selection {
+    @apply bg-accent text-on-accent;
+  }
+}

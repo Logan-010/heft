@@ -5,10 +5,12 @@ import Api.Util
 import Browser
 import Browser.Navigation as Nav
 import Html
+import Html.Attributes exposing (attribute, class)
 import Http
 import Page.Home
 import Page.Login
 import Page.NotFound
+import Style
 import Url exposing (Url)
 import Url.Parser as Parser
 
@@ -152,12 +154,27 @@ view model =
         document =
             viewRoute model
     in
-    case model.error of
-        Just error ->
-            { document | body = document.body ++ [ Html.p [] [ Html.text error ] ] }
+    { document
+        | body =
+            [ Html.main_ [ class "grid min-h-svh place-items-center px-4 py-8 sm:px-8 sm:py-16" ]
+                [ Html.div [ class "w-full max-w-lg min-w-0 border border-line bg-surface p-6 sm:p-10" ]
+                    (document.body
+                        ++ (case model.error of
+                                Just error ->
+                                    [ Html.p
+                                        [ class (Style.message ++ " mt-6")
+                                        , attribute "role" "alert"
+                                        ]
+                                        [ Html.text error ]
+                                    ]
 
-        Nothing ->
-            document
+                                Nothing ->
+                                    []
+                           )
+                    )
+                ]
+            ]
+    }
 
 
 viewRoute : Model -> Browser.Document Msg

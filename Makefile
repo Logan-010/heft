@@ -28,6 +28,7 @@ install:
 fmt:
 	ormolu app/**/*.hs -i
 	cabal-fmt *.cabal -i
+	elm-format frontend/src/**/*.elm --yes
 
 .PHONY: lint
 lint:

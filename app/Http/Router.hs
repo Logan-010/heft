@@ -46,6 +46,8 @@ root db secret logger req respond =
           "OK"
     ("POST", ["api", "auth", "login"]) ->
       Http.Auth.login db logger req respond
+    ("POST", ["api", "auth", "logout"]) ->
+      Http.Auth.logout db logger req respond
     ("POST", ["api", "auth", "register"]) ->
       Http.Auth.register db secret logger req respond
     ("GET", ["api", "auth", "validate"]) ->
