@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Database.Finance.Accounts (open, close) where
+module Database.Finance.Accounts (list, open, close) where
 
 import Database.SQLite.Simple
   ( Connection,
@@ -8,6 +8,7 @@ import Database.SQLite.Simple
     execute,
     query,
     withImmediateTransaction,
+    withTransaction,
   )
 
 open :: Connection -> String -> String -> Int -> IO (Maybe String)
@@ -47,3 +48,17 @@ close db username accountName = withImmediateTransaction db $ do
       | otherwise -> pure $ Just "Error: Account is not empty"
     [] -> pure $ Just "Error: Account not found"
     _ -> pure $ Just "Error: Account name is ambiguous"
+
+list :: Connection -> String -> IO (Either String [(String, Int)])
+list db username = withTransaction db $ do
+  users <- query db "SELECT id FROM users WHERE username = ?" (Only username) :: IO [Only Int]
+  case users of
+    [Only userId] ->
+      Right
+        <$> query
+          db
+          "SELECT accounts.name, accounts.initial + COALESCE(SUM(transactions.amount), 0) \
+          \FROM accounts LEFT JOIN transactions ON transactions.account_id = accounts.id \
+          \WHERE accounts.user_id = ? GROUP BY accounts.id ORDER BY accounts.name, accounts.id"
+          (Only userId)
+    _ -> pure $ Left "Error: User not found"

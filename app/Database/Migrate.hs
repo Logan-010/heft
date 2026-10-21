@@ -75,6 +75,8 @@ migration2 conn = do
     \ user_id INTEGER NOT NULL,\
     \ account_id INTEGER NOT NULL,\
     \ amount INTEGER NOT NULL,\
+    \ name TEXT NOT NULL,\
+    \ timestamp INTEGER NOT NULL,\
     \ FOREIGN KEY (user_id) REFERENCES users(id)\
     \ ON DELETE CASCADE,\
     \ FOREIGN KEY (account_id) REFERENCES accounts(id)\
