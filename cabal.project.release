@@ -1,4 +1,5 @@
 packages: .
+
 optimization: 2
 split-sections: True
 split-objs: False
@@ -9,6 +10,10 @@ library-profiling: False
 executable-profiling: False
 executable-dynamic: False
 jobs: $ncpus
+
 package *
   ghc-options: -O2
   split-sections: True
+
+package password
+  flags: +argon2 -bcrypt -pbkdf2 -scrypt -cryptonite -crypton

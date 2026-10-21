@@ -84,11 +84,71 @@
           '';
 
           haskellApp = pkgs.haskell.lib.dontCheck (hs.callCabal2nix "project" projectSrc { });
+
+          haskellEnv = haskellApp.env;
+
+          heft = pkgs.stdenv.mkDerivation {
+            pname = "heft";
+            version = "1.0.0";
+
+            src = projectSrc;
+
+            nativeBuildInputs = [
+              haskellEnv
+              pkgs.cabal-install
+              pkgs.pkg-config
+            ];
+
+            buildInputs = [
+              pkgs.zlib
+            ];
+
+            dontConfigure = true;
+            dontFixup = true;
+
+            buildPhase = ''
+              runHook preBuild
+
+              export HOME="$TMPDIR"
+              export CABAL_DIR="$TMPDIR/.cabal"
+
+              cabal build exe:heft \
+                --project-file=cabal.project.release \
+                --offline
+
+              runHook postBuild
+            '';
+
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p "$out/bin"
+
+              binary=$(cabal list-bin exe:heft \
+                --project-file=cabal.project.release)
+
+              cp "$binary" "$out/bin/heft"
+              chmod +w "$out/bin/heft"
+
+              ${
+                if pkgs.stdenv.isDarwin then
+                  ''
+                    strip -x "$out/bin/heft"
+                  ''
+                else
+                  ''
+                    strip --strip-all "$out/bin/heft"
+                  ''
+              }
+
+              chmod +x "$out/bin/heft"
+
+              runHook postInstall
+            '';
+          };
         in
         {
-          default = pkgs.haskell.lib.addExtraLibraries haskellApp [
-            pkgs.zlib
-          ];
+          default = heft;
 
           inherit frontend;
         }
