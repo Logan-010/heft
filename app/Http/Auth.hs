@@ -8,8 +8,8 @@ module Http.Auth (authenticate, register, login, validate) where
 
 import Control.Exception (IOException, try)
 import Data.Aeson (FromJSON, eitherDecode)
-import qualified Data.ByteString.Char8 as BS
 import Data.ByteString.Builder (toLazyByteString)
+import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import Data.Password.Argon2 (Argon2, PasswordCheck (PasswordCheckFail, PasswordCheckSuccess), PasswordHash, checkPassword, mkPassword)
 import Data.Text (Text)

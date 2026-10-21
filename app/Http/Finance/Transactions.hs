@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Http.Finance.Transactions (list, new) where
+module Http.Finance.Transactions (list, new, remove) where
 
 import Control.Exception (IOException, try)
 import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
@@ -120,3 +120,46 @@ new db logger req respond =
                   $ show tid
   where
     getTimestamp = floor <$> getPOSIXTime
+
+data RemoveRequest = RemoveRequest
+  { id :: Int,
+    accountName :: Text
+  }
+  deriving (Show, Generic)
+
+instance FromJSON RemoveRequest
+
+remove :: Connection -> Logger -> Application
+remove db logger req respond =
+  strictRequestBody req >>= \b -> case eitherDecode b of
+    Left _ -> respond $ responseLBS status400 [("Content-Type", "text/plain")] $ LBS.pack "Bad request"
+    Right (RemoveRequest i a) ->
+      Http.Auth.authenticate db req >>= \case
+        Left (status, err) ->
+          respond
+            $ responseLBS
+              status
+              [("Content-Type", "text/plain")]
+            $ LBS.pack err
+        Right u ->
+          try (Database.Finance.Transactions.remove db u (T.unpack a) i) >>= \case
+            Left (err :: IOException) ->
+              Logger.logMsg
+                logger
+                Logger.Warn
+                ( T.pack $
+                    show err
+                )
+                >> respond (responseLBS status500 [("Content-Type", "text/plain")] "Internal Server Error")
+            Right (Just err) ->
+              respond
+                $ responseLBS
+                  status400
+                  [("Content-Type", "text/plain")]
+                $ LBS.pack err
+            Right Nothing ->
+              respond
+                $ responseLBS
+                  status200
+                  [("Content-Type", "text/plain")]
+                $ LBS.pack "OK!"

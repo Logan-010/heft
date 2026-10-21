@@ -30,9 +30,9 @@ executable heft
     Database.Migrate
     Http
     Http.Auth
-    Http.Router
     Http.Finance.Accounts
     Http.Finance.Transactions
+    Http.Router
     Logger
 
   -- other-extensions:
