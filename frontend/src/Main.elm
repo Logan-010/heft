@@ -19,6 +19,7 @@ type alias Model =
     , loggedIn : Maybe Bool
     , error : Maybe String
     , loginModel : Page.Login.Model
+    , homeModel : Page.Home.Model
     }
 
 
@@ -44,6 +45,7 @@ type Msg
     = UrlRequested Browser.UrlRequest
     | UrlChanged Url
     | AuthMsg Api.Auth.AuthMsg
+    | HomeMsg Page.Home.Msg
     | LoginMsg Page.Login.Msg
 
 
@@ -65,7 +67,7 @@ init _ url key =
         u =
             Url.toString { url | path = "", query = Nothing, fragment = Nothing }
     in
-    ( { key = key, route = routeFromUrl url, loggedIn = Nothing, error = Nothing, loginModel = Page.Login.init u }
+    ( { key = key, route = routeFromUrl url, loggedIn = Nothing, error = Nothing, loginModel = Page.Login.init u, homeModel = Page.Home.init u }
     , Cmd.map AuthMsg (Api.Auth.isLoggedIn u)
     )
 
@@ -110,8 +112,29 @@ update msg model =
             let
                 ( loginModel, loginCmd ) =
                     Page.Login.update loginMsg model.loginModel
+
+                loggedIn =
+                    case loginMsg of
+                        Page.Login.LoggedIn (Api.Auth.LogIn (Ok _)) ->
+                            Just True
+
+                        Page.Login.Registered (Api.Auth.Register (Ok _)) ->
+                            Just True
+
+                        Page.Login.LoggedOut (Api.Auth.LogOut (Ok _)) ->
+                            Just False
+
+                        _ ->
+                            model.loggedIn
             in
-            ( { model | loginModel = loginModel }, Cmd.map LoginMsg loginCmd )
+            ( { model | loginModel = loginModel, loggedIn = loggedIn }, Cmd.map LoginMsg loginCmd )
+
+        HomeMsg homeMsg ->
+            let
+                ( homeModel, homeCmd ) =
+                    Page.Home.update homeMsg model.homeModel
+            in
+            ( { model | homeModel = homeModel }, Cmd.map HomeMsg homeCmd )
 
 
 redirectIfLoggedOut : Model -> Cmd Msg
@@ -141,7 +164,13 @@ viewRoute : Model -> Browser.Document Msg
 viewRoute model =
     case model.route of
         Home ->
-            Page.Home.view
+            let
+                document =
+                    Page.Home.view
+            in
+            { title = document.title
+            , body = List.map (Html.map HomeMsg) document.body
+            }
 
         Login ->
             let

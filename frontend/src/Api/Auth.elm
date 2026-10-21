@@ -1,4 +1,4 @@
-module Api.Auth exposing (AuthMsg(..), isLoggedIn, logIn, register)
+module Api.Auth exposing (AuthMsg(..), isLoggedIn, logIn, logOut, register)
 
 import Http
 import Json.Encode as Encode
@@ -8,6 +8,7 @@ import Url.Builder
 type AuthMsg
     = IsLoggedIn (Result Http.Error String)
     | LogIn (Result Http.Error String)
+    | LogOut (Result Http.Error String)
     | Register (Result Http.Error String)
 
 
@@ -33,6 +34,15 @@ logIn url username password =
         { url = Url.Builder.crossOrigin url [ "api", "auth", "login" ] []
         , body = Http.jsonBody (encodeCredentials username password)
         , expect = Http.expectString LogIn
+        }
+
+
+logOut : String -> Cmd AuthMsg
+logOut url =
+    Http.post
+        { url = Url.Builder.crossOrigin url [ "api", "auth", "logout" ] []
+        , body = Http.emptyBody
+        , expect = Http.expectString LogOut
         }
 
 
