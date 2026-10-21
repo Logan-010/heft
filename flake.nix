@@ -23,7 +23,17 @@
         let
           pkgs = import nixpkgs { inherit system; };
 
-          hs = pkgs.haskellPackages;
+          hs = pkgs.haskellPackages.override {
+            overrides = hself: hsuper: {
+              password = pkgs.haskell.lib.dontCheck (
+                hself.callHackageDirect {
+                  pkg = "password";
+                  ver = "3.1.1.0";
+                  sha256 = "sha256-LX9EQ0aUgA1zr6CwO+LteljyrgCaOag1n/dIvpPWeL4=";
+                } { }
+              );
+            };
+          };
 
           frontend = pkgs.buildNpmPackage {
             pname = "heft-frontend";
@@ -83,69 +93,9 @@
             test -s $out/frontend/dist/icon.png
           '';
 
-          haskellApp = pkgs.haskell.lib.dontCheck (hs.callCabal2nix "project" projectSrc { });
+          haskellApp = pkgs.haskell.lib.dontCheck (hs.callCabal2nix "heft" projectSrc { });
 
-          haskellEnv = haskellApp.env;
-
-          heft = pkgs.stdenv.mkDerivation {
-            pname = "heft";
-            version = "1.0.0";
-
-            src = projectSrc;
-
-            nativeBuildInputs = [
-              haskellEnv
-              pkgs.cabal-install
-              pkgs.pkg-config
-            ];
-
-            buildInputs = [
-              pkgs.zlib
-            ];
-
-            dontConfigure = true;
-            dontFixup = true;
-
-            buildPhase = ''
-              runHook preBuild
-
-              export HOME="$TMPDIR"
-              export CABAL_DIR="$TMPDIR/.cabal"
-
-              cabal build exe:heft \
-                --project-file=cabal.project.release \
-                --offline
-
-              runHook postBuild
-            '';
-
-            installPhase = ''
-              runHook preInstall
-
-              mkdir -p "$out/bin"
-
-              binary=$(cabal list-bin exe:heft \
-                --project-file=cabal.project.release)
-
-              cp "$binary" "$out/bin/heft"
-              chmod +w "$out/bin/heft"
-
-              ${
-                if pkgs.stdenv.isDarwin then
-                  ''
-                    strip -x "$out/bin/heft"
-                  ''
-                else
-                  ''
-                    strip --strip-all "$out/bin/heft"
-                  ''
-              }
-
-              chmod +x "$out/bin/heft"
-
-              runHook postInstall
-            '';
-          };
+          heft = pkgs.haskell.lib.doStrip haskellApp;
         in
         {
           default = heft;
