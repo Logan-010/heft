@@ -25,6 +25,8 @@ executable heft
     Cli
     Database
     Database.Auth
+    Database.Finance.Accounts
+    Database.Finance.Transactions
     Database.Migrate
     Http
     Http.Auth

@@ -20,6 +20,9 @@ migrate conn = withImmediateTransaction conn $ do
   when (version < 1) $ do
     migration1 conn
     execute_ conn "PRAGMA user_version = 1"
+  when (version < 2) $ do
+    migration2 conn
+    execute_ conn "PRAGMA user_version = 2"
 
 migration1 :: Connection -> IO ()
 migration1 conn = do
@@ -50,3 +53,30 @@ migration1 conn = do
     conn
     "CREATE INDEX idx_sessions_expires_at \
     \ON sessions(expires_at)"
+
+migration2 :: Connection -> IO ()
+migration2 conn = do
+  execute_
+    conn
+    "CREATE TABLE accounts (\
+    \ id INTEGER PRIMARY KEY,\
+    \ user_id INTEGER NOT NULL,\
+    \ name TEXT NOT NULL,\
+    \ unit TEXT NOT NULL,\
+    \ initial INTEGER NOT NULL,\
+    \ FOREIGN KEY (user_id) REFERENCES users(id)\
+    \ ON DELETE CASCADE\
+    \)"
+
+  execute_
+    conn
+    "CREATE TABLE transactions (\
+    \ id INTEGER PRIMARY KEY,\
+    \ user_id INTEGER NOT NULL,\
+    \ account_id INTEGER NOT NULL,\
+    \ amount INTEGER NOT NULL,\
+    \ FOREIGN KEY (user_id) REFERENCES users(id)\
+    \ ON DELETE CASCADE,\
+    \ FOREIGN KEY (account_id) REFERENCES accounts(id)\
+    \ ON DELETE CASCADE\
+    \)"

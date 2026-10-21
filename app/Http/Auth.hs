@@ -22,8 +22,6 @@ import qualified Logger
 import Network.HTTP.Types (Status, status200, status400, status401, status409, status500)
 import Network.Wai (Application, Request, requestHeaders, responseLBS, strictRequestBody)
 
-
-
 authorize :: Connection -> Logger -> String -> LBS.ByteString -> Application
 authorize db logger user body _ respond =
   try (Database.Auth.createSession db user) >>= \case
