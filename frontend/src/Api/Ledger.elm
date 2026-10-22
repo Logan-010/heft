@@ -1,7 +1,9 @@
 module Api.Ledger exposing (LedgerMsg(..), exportLedger, importLedger)
 
 import Http
-import Json
+import Json.Decode
+import Json.Encode
+import Url.Builder
 
 
 type LedgerMsg
@@ -14,9 +16,9 @@ type alias Ledger =
     }
 
 
-ledgerDecoder : Json.Decoder
+ledgerDecoder : Json.Decode.Decoder Ledger
 ledgerDecoder =
-    Json.Decode.map1 Ledger (Json.Decode.at [ "ledger" ] Json.Decode.string)
+    Json.Decode.map Ledger (Json.Decode.at [ "ledger" ] Json.Decode.string)
 
 
 exportLedger : () -> Cmd LedgerMsg
@@ -24,7 +26,7 @@ exportLedger _ =
     Http.get { url = Url.Builder.absolute [ "api", "ledger", "export" ] [], expect = Http.expectJson ExportLedger ledgerDecoder }
 
 
-encodeLedger : String -> Json.Value
+encodeLedger : String -> Json.Encode.Value
 encodeLedger ledger =
     Json.Encode.object [ ( "ledger", Json.Encode.string ledger ) ]
 

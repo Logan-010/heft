@@ -1,16 +1,22 @@
 module Page.Home exposing (Model, Msg(..), init, update, view)
 
 import Api.Finance as Finance
+import Api.Ledger as Ledger
 import Api.Util
 import Array
 import Browser
 import Dict
+import File exposing (File)
+import File.Download
+import File.Select
 import Html exposing (Html, button, details, div, footer, form, h1, h2, input, label, p, span, summary, text)
 import Html.Attributes exposing (attribute, class, disabled, placeholder, type_, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html.Events exposing (onClick, onInput, onSubmit, preventDefaultOn)
 import Http
+import Json.Decode as Decode
 import Money
 import Style
+import Task
 import Time
 
 
@@ -47,6 +53,13 @@ type Msg
     | UpdateAmount String
     | Cancel
     | Save
+    | ChooseLedger
+    | SelectedLedger File
+    | DroppedLedgers (List File)
+    | ReadLedger String
+    | ExportLedger
+    | ReceivedLedger Ledger.LedgerMsg
+    | DragOver
 
 
 init : Model
@@ -83,6 +96,34 @@ selectedAccount model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        DragOver ->
+            ( model, Cmd.none )
+
+        ReadLedger contents ->
+            ( model, Cmd.map ReceivedLedger (Ledger.importLedger contents) )
+
+        ReceivedLedger response ->
+            case response of
+                Ledger.ExportLedger result ->
+                    case result of
+                        Err error ->
+                            failed error model
+
+                        Ok ledger ->
+                            ( { model | loading = False }, File.Download.string "heft.ledger" "text/plain;charset=utf-8" ledger.ledger )
+
+                Ledger.ImportLedger result ->
+                    case result of
+                        Err error ->
+                            failed error model
+
+                        Ok _ ->
+                            let
+                                ( updated, cmd ) =
+                                    refresh { model | editor = Nothing }
+                            in
+                            ( { updated | message = Just "Ledger imported successfully." }, cmd )
+
         Received response ->
             case response of
                 Finance.ListAccounts result ->
@@ -166,6 +207,23 @@ mutationResult result model =
 updateReady : Msg -> Model -> ( Model, Cmd Msg )
 updateReady msg model =
     case msg of
+        ChooseLedger ->
+            ( model, File.Select.file [] SelectedLedger )
+
+        SelectedLedger file ->
+            readLedger file model
+
+        DroppedLedgers files ->
+            case files of
+                [ file ] ->
+                    readLedger file model
+
+                _ ->
+                    ( { model | message = Just "Drop one ledger file at a time." }, Cmd.none )
+
+        ExportLedger ->
+            ( { model | loading = True, message = Nothing }, Cmd.map ReceivedLedger (Ledger.exportLedger ()) )
+
         RefreshAccounts ->
             refresh model
 
@@ -215,6 +273,11 @@ updateReady msg model =
 
         _ ->
             ( model, Cmd.none )
+
+
+readLedger : File -> Model -> ( Model, Cmd Msg )
+readLedger file model =
+    ( { model | loading = True, message = Nothing }, Task.perform ReadLedger (File.toString file) )
 
 
 validName : String -> Bool
@@ -300,6 +363,7 @@ view model =
                 [ viewAccounts model
                 , viewTransactions model
                 ]
+            , viewLedger model
             ]
         ]
     }
@@ -308,6 +372,30 @@ view model =
 action : Model -> String -> Msg -> String -> Html Msg
 action model styling msg caption =
     button [ type_ "button", class styling, disabled model.loading, onClick msg ] [ text caption ]
+
+
+viewLedger : Model -> Html Msg
+viewLedger model =
+    details
+        [ class "w-full max-w-md text-sm"
+        , attribute "aria-label" "Import and export ledger"
+        ]
+        [ summary [ class "cursor-pointer py-2 text-muted focus-visible:outline-accent" ] [ text "Import / export ledger" ]
+        , div
+            [ class (Style.panel ++ " mt-2 space-y-2 border-dashed p-3")
+            , preventDefaultOn "dragover" (Decode.succeed ( DragOver, True ))
+            , preventDefaultOn "drop"
+                (Decode.at [ "dataTransfer", "files" ] (Decode.list File.decoder)
+                    |> Decode.map (\files -> ( DroppedLedgers files, True ))
+                )
+            ]
+            [ p [ class "text-xs text-muted" ] [ text "Drop an hledger file here or select one to import." ]
+            , div [ class Style.toolbar ]
+                [ action model Style.buttonSecondary ChooseLedger "Import ledger"
+                , action model Style.buttonSecondary ExportLedger "Export ledger"
+                ]
+            ]
+        ]
 
 
 viewAccounts : Model -> Html Msg
