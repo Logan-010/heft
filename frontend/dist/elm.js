@@ -8084,8 +8084,202 @@ var $author$project$Page$Home$EditTransaction = function (a) {
 var $author$project$Page$Home$RemoveTransaction = function (a) {
 	return {$: 7, a: a};
 };
+var $elm$time$Time$Posix = $elm$core$Basics$identity;
+var $elm$time$Time$millisToPosix = $elm$core$Basics$identity;
+var $elm$time$Time$flooredDiv = F2(
+	function (numerator, denominator) {
+		return $elm$core$Basics$floor(numerator / denominator);
+	});
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0;
+	return millis;
+};
+var $elm$time$Time$toAdjustedMinutesHelp = F3(
+	function (defaultOffset, posixMinutes, eras) {
+		toAdjustedMinutesHelp:
+		while (true) {
+			if (!eras.b) {
+				return posixMinutes + defaultOffset;
+			} else {
+				var era = eras.a;
+				var olderEras = eras.b;
+				if (_Utils_cmp(era.ad, posixMinutes) < 0) {
+					return posixMinutes + era.ar;
+				} else {
+					var $temp$defaultOffset = defaultOffset,
+						$temp$posixMinutes = posixMinutes,
+						$temp$eras = olderEras;
+					defaultOffset = $temp$defaultOffset;
+					posixMinutes = $temp$posixMinutes;
+					eras = $temp$eras;
+					continue toAdjustedMinutesHelp;
+				}
+			}
+		}
+	});
+var $elm$time$Time$toAdjustedMinutes = F2(
+	function (_v0, time) {
+		var defaultOffset = _v0.a;
+		var eras = _v0.b;
+		return A3(
+			$elm$time$Time$toAdjustedMinutesHelp,
+			defaultOffset,
+			A2(
+				$elm$time$Time$flooredDiv,
+				$elm$time$Time$posixToMillis(time),
+				60000),
+			eras);
+	});
+var $elm$time$Time$toCivil = function (minutes) {
+	var rawDay = A2($elm$time$Time$flooredDiv, minutes, 60 * 24) + 719468;
+	var era = (((rawDay >= 0) ? rawDay : (rawDay - 146096)) / 146097) | 0;
+	var dayOfEra = rawDay - (era * 146097);
+	var yearOfEra = ((((dayOfEra - ((dayOfEra / 1460) | 0)) + ((dayOfEra / 36524) | 0)) - ((dayOfEra / 146096) | 0)) / 365) | 0;
+	var dayOfYear = dayOfEra - (((365 * yearOfEra) + ((yearOfEra / 4) | 0)) - ((yearOfEra / 100) | 0));
+	var mp = (((5 * dayOfYear) + 2) / 153) | 0;
+	var month = mp + ((mp < 10) ? 3 : (-9));
+	var year = yearOfEra + (era * 400);
+	return {
+		aj: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
+		aq: month,
+		aL: year + ((month <= 2) ? 1 : 0)
+	};
+};
+var $elm$time$Time$toDay = F2(
+	function (zone, time) {
+		return $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).aj;
+	});
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$time$Time$toHour = F2(
+	function (zone, time) {
+		return A2(
+			$elm$core$Basics$modBy,
+			24,
+			A2(
+				$elm$time$Time$flooredDiv,
+				A2($elm$time$Time$toAdjustedMinutes, zone, time),
+				60));
+	});
+var $elm$time$Time$toMinute = F2(
+	function (zone, time) {
+		return A2(
+			$elm$core$Basics$modBy,
+			60,
+			A2($elm$time$Time$toAdjustedMinutes, zone, time));
+	});
+var $elm$time$Time$Apr = 3;
+var $elm$time$Time$Aug = 7;
+var $elm$time$Time$Dec = 11;
+var $elm$time$Time$Feb = 1;
+var $elm$time$Time$Jan = 0;
+var $elm$time$Time$Jul = 6;
+var $elm$time$Time$Jun = 5;
+var $elm$time$Time$Mar = 2;
+var $elm$time$Time$May = 4;
+var $elm$time$Time$Nov = 10;
+var $elm$time$Time$Oct = 9;
+var $elm$time$Time$Sep = 8;
+var $elm$time$Time$toMonth = F2(
+	function (zone, time) {
+		var _v0 = $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).aq;
+		switch (_v0) {
+			case 1:
+				return 0;
+			case 2:
+				return 1;
+			case 3:
+				return 2;
+			case 4:
+				return 3;
+			case 5:
+				return 4;
+			case 6:
+				return 5;
+			case 7:
+				return 6;
+			case 8:
+				return 7;
+			case 9:
+				return 8;
+			case 10:
+				return 9;
+			case 11:
+				return 10;
+			default:
+				return 11;
+		}
+	});
+var $elm$time$Time$toSecond = F2(
+	function (_v0, time) {
+		return A2(
+			$elm$core$Basics$modBy,
+			60,
+			A2(
+				$elm$time$Time$flooredDiv,
+				$elm$time$Time$posixToMillis(time),
+				1000));
+	});
+var $elm$time$Time$toYear = F2(
+	function (zone, time) {
+		return $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).aL;
+	});
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
+var $author$project$Page$Home$formatTimestamp = function (seconds) {
+	var time = $elm$time$Time$millisToPosix(seconds * 1000);
+	var pad = function (number) {
+		return A3(
+			$elm$core$String$padLeft,
+			2,
+			'0',
+			$elm$core$String$fromInt(number));
+	};
+	var month = function () {
+		var _v0 = A2($elm$time$Time$toMonth, $elm$time$Time$utc, time);
+		switch (_v0) {
+			case 0:
+				return '01';
+			case 1:
+				return '02';
+			case 2:
+				return '03';
+			case 3:
+				return '04';
+			case 4:
+				return '05';
+			case 5:
+				return '06';
+			case 6:
+				return '07';
+			case 7:
+				return '08';
+			case 8:
+				return '09';
+			case 9:
+				return '10';
+			case 10:
+				return '11';
+			default:
+				return '12';
+		}
+	}();
+	return $elm$core$String$fromInt(
+		A2($elm$time$Time$toYear, $elm$time$Time$utc, time)) + ('-' + (month + ('-' + (pad(
+		A2($elm$time$Time$toDay, $elm$time$Time$utc, time)) + ('T' + (pad(
+		A2($elm$time$Time$toHour, $elm$time$Time$utc, time)) + (':' + (pad(
+		A2($elm$time$Time$toMinute, $elm$time$Time$utc, time)) + (':' + (pad(
+		A2($elm$time$Time$toSecond, $elm$time$Time$utc, time)) + 'Z'))))))))));
+};
+var $elm$html$Html$time = _VirtualDom_node('time');
 var $author$project$Page$Home$viewTransaction = F4(
 	function (model, unit, name, transaction) {
+		var timestamp = $author$project$Page$Home$formatTimestamp(transaction.a6);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -8095,14 +8289,36 @@ var $author$project$Page$Home$viewTransaction = F4(
 			_List_fromArray(
 				[
 					A2(
-					$elm$html$Html$span,
+					$elm$html$Html$div,
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class('min-w-0 flex-1 break-words')
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text(name)
+							A2(
+							$elm$html$Html$span,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(name)
+								])),
+							A2(
+							$elm$html$Html$time,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('block text-xs text-muted'),
+									A2($elm$html$Html$Attributes$attribute, 'datetime', timestamp)
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A3(
+										$elm$core$String$replace,
+										'T',
+										' ',
+										A2($elm$core$String$dropRight, 1, timestamp)) + ' UTC')
+								]))
 						])),
 					A2(
 					$elm$html$Html$span,
@@ -8412,10 +8628,10 @@ var $author$project$Page$Login$view = function (model) {
 						$elm$html$Html$input,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$type_('text'),
+								$elm$html$Html$Attributes$type_('password'),
 								$elm$html$Html$Attributes$class($author$project$Style$input),
 								A2($elm$html$Html$Attributes$attribute, 'aria-label', 'Secret'),
-								$elm$html$Html$Attributes$placeholder('Enter secret...'),
+								$elm$html$Html$Attributes$placeholder('What\u0027s the magic word?'),
 								$elm$html$Html$Events$onInput($author$project$Page$Login$UpdateSecret),
 								$elm$html$Html$Attributes$value(model.K)
 							]),

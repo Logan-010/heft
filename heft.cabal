@@ -33,6 +33,7 @@ executable heft
     Http.Auth
     Http.Finance.Accounts
     Http.Finance.Transactions
+    Http.Ledger
     Http.Router
     Logger
 

@@ -8,6 +8,7 @@ import Data.FileEmbed (embedFileRelative)
 import Data.Password.Argon2 (Argon2, PasswordHash)
 import Database.SQLite.Simple (Connection)
 import qualified Http.Auth
+import qualified Http.Ledger
 import qualified Http.Finance.Accounts
 import qualified Http.Finance.Transactions
 import Logger (Logger)
@@ -66,6 +67,10 @@ root db secret logger req respond =
       Http.Finance.Transactions.remove db logger req respond
     ("UPDATE", ["api", "transactions", "edit"]) ->
       Http.Finance.Transactions.edit db logger req respond
+    ("GET", ["api", "ledger", "export"]) ->
+      Http.Ledger.exportLedger db logger req respond
+    ("POST", ["api", "ledger", "import"]) ->
+      Http.Ledger.importLedger db logger req respond
     -- Frontend routes
     ("GET", ["style.css"]) ->
       respond $
