@@ -11,6 +11,7 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Money
 import Style
+import Time
 
 
 type alias Model =
@@ -427,14 +428,86 @@ viewTransactions model =
 
 viewTransaction : Model -> String -> String -> Finance.Transaction -> Html Msg
 viewTransaction model unit name transaction =
+    let
+        timestamp =
+            formatTimestamp transaction.timestamp
+    in
     div [ class "flex flex-wrap items-center gap-3 border-b border-line py-2" ]
-        [ span [ class "min-w-0 flex-1 break-words" ] [ text name ]
+        [ div [ class "min-w-0 flex-1 break-words" ]
+            [ span [] [ text name ]
+            , Html.time
+                [ class "block text-xs text-muted"
+                , attribute "datetime" timestamp
+                ]
+                [ text (String.replace "T" " " (String.dropRight 1 timestamp) ++ " UTC") ]
+            ]
         , span [ class Style.money ] [ text (money unit transaction.ammount) ]
         , div [ class Style.toolbar ]
             [ action model Style.buttonQuiet (EditTransaction transaction) "Edit"
             , action model Style.buttonQuiet (RemoveTransaction transaction.id) "Remove"
             ]
         ]
+
+
+formatTimestamp : Int -> String
+formatTimestamp seconds =
+    let
+        time =
+            Time.millisToPosix (seconds * 1000)
+
+        pad number =
+            String.padLeft 2 '0' (String.fromInt number)
+
+        month =
+            case Time.toMonth Time.utc time of
+                Time.Jan ->
+                    "01"
+
+                Time.Feb ->
+                    "02"
+
+                Time.Mar ->
+                    "03"
+
+                Time.Apr ->
+                    "04"
+
+                Time.May ->
+                    "05"
+
+                Time.Jun ->
+                    "06"
+
+                Time.Jul ->
+                    "07"
+
+                Time.Aug ->
+                    "08"
+
+                Time.Sep ->
+                    "09"
+
+                Time.Oct ->
+                    "10"
+
+                Time.Nov ->
+                    "11"
+
+                Time.Dec ->
+                    "12"
+    in
+    String.fromInt (Time.toYear Time.utc time)
+        ++ "-"
+        ++ month
+        ++ "-"
+        ++ pad (Time.toDay Time.utc time)
+        ++ "T"
+        ++ pad (Time.toHour Time.utc time)
+        ++ ":"
+        ++ pad (Time.toMinute Time.utc time)
+        ++ ":"
+        ++ pad (Time.toSecond Time.utc time)
+        ++ "Z"
 
 
 viewTotals : Model -> Finance.Account -> Html Msg

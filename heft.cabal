@@ -28,6 +28,7 @@ executable heft
     Database.Finance.Accounts
     Database.Finance.Transactions
     Database.Migrate
+    Database.Ledger
     Http
     Http.Auth
     Http.Finance.Accounts
@@ -52,6 +53,7 @@ executable heft
     , wai
     , warp
     , warp-tls
+    , hledger-lib
 
   hs-source-dirs:   app
   default-language: Haskell2010
