@@ -1,7 +1,7 @@
 .PHONY: build
 build: build-frontend
 	cabal build exe:heft --project-file=cabal.project.release
-	strip --strip-all $$(cabal list-bin exe:heft)
+	strip --strip-all $$(cabal list-bin exe:heft --project-file=cabal.project.release)
 
 .PHONY: build-frontend
 build-frontend:
@@ -13,7 +13,7 @@ build-dev: build-frontend
 
 .PHONY: run
 run: build
-	cabal run exe:heft
+	cabal run exe:heft --project-file=cabal.project.release
 
 .PHONY: run-dev
 run-dev: build-dev
