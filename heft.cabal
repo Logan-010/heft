@@ -57,3 +57,19 @@ executable heft
 
   hs-source-dirs:   app
   default-language: Haskell2010
+
+test-suite ledger-tests
+  type:             exitcode-stdio-1.0
+  main-is:          LedgerTest.hs
+  hs-source-dirs:   test, app
+  other-modules:
+    Database.Ledger
+    Database.Migrate
+  ghc-options:      -Wall
+  build-depends:
+    , base ==4.20.2.0
+    , hledger-lib
+    , sqlite-simple
+    , text
+    , time
+  default-language: Haskell2010
